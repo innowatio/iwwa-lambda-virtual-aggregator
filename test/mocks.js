@@ -39,7 +39,7 @@ export function getReading ({source="forecast", type="temperature"}) {
 
 export function getFormula () {
     return {
-        "id_result": "Pod1",
+        "resultId": "Pod1",
         "variables": ["ANZ01", "ANZ02"],
         "formula": "ANZ01+ANZ02"
     };
