@@ -1,0 +1,43 @@
+{
+  "name": "iwwa-lambda-virtual-aggregator",
+  "version": "1.0.0",
+  "description": "Lambda virtual aggregator",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "babel": "^5.8.29",
+    "bluebird": "^3.0.5",
+    "dotenv": "^1.2.0",
+    "kinesis-router": "^1.2.1",
+    "mongodb": "^2.0.48",
+    "ramda": "^0.19.1"
+  },
+  "devDependencies": {
+    "babel": "^5.8.29",
+    "babel-core": "^5.8.29",
+    "babel-eslint": "^4.1.4",
+    "chai": "^3.4.1",
+    "chai-as-promised": "^5.1.0",
+    "codecov": "^1.0.1",
+    "eslint": "^1.9.0",
+    "gulp": "^3.9.0",
+    "gulp-eslint": "^1.0.0",
+    "isparta": "^3.5.3",
+    "lambda-deploy": "^2.1.0",
+    "mocha": "^2.3.3",
+    "sinon": "^1.17.2",
+    "sinon-chai": "^2.8.0"
+  },
+  "scripts": {
+    "codecov": "codecov",
+    "deploy": "gulp deploy",
+    "dev": "npm test -- --watch",
+    "lint": "eslint src test",
+    "test": "NODE_PATH=src NODE_ENV=test mocha --compilers js:babel/register --recursive"
+  },
+  "author": "Team Wattellina <wattellina@mondora.com>",
+  "license": "Apache-2.0"
+}
