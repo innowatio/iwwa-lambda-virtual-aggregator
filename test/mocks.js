@@ -22,27 +22,25 @@ export function getRecordFromObject (object) {
     };
 }
 
-export function getReading (source="reading") {
+export function getReading ({source="forecast", type="temperature"}) {
     return {
         "sensorId": "sensorId",
         "date": new Date(),
         "source": source,
         "measurements": [
             {
-                "type": "activeEnergy",
+                "type": type,
                 "value": "0.808",
                 "unitOfMeasurement": "kWh"
-            },
-            {
-                "type": "reactiveEnergy",
-                "value": "-0.085",
-                "unitOfMeasurement": "kVArh"
-            },
-            {
-                "type": "maxPower",
-                "value": "0.000",
-                "unitOfMeasurement": "VAr"
             }
         ]
+    };
+}
+
+export function getFormula () {
+    return {
+        "id_result": "Pod1",
+        "variables": ["ANZ01", "ANZ02"],
+        "formula": "ANZ01+ANZ02"
     };
 }

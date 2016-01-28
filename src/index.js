@@ -20,6 +20,9 @@ async function pipeline (event) {
         return null;
     }
 
+    // filter measurements
+    
+
     // find sensor name
     const sensor = rawReading.sensorId;
 
