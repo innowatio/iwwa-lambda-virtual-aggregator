@@ -1,9 +1,9 @@
 import {propEq, contains} from "ramda";
 
-import {ALLOWED_SOURCES} from "../common/config";
+import * as config from "../services/config";
 
 function checkSource (reading) {
-    return contains((reading.source || reading.measurements[0].source), ALLOWED_SOURCES);
+    return contains((reading.source || reading.measurements[0].source), config.ALLOWED_SOURCES);
 }
 
 function checkContainsEnergyMeasures (reading) {
@@ -13,7 +13,7 @@ function checkContainsEnergyMeasures (reading) {
         reading.measurements.find(propEq("type", "maxPower")));
 }
 
-export function skipProcessing (reading) {
+export default function skipProcessing (reading) {
     return (
         // Ignore if not a reading
         !checkSource(reading) ||

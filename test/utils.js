@@ -3,7 +3,7 @@ export function getSensorWithSourceInMeasurements (date, source) {
         "id": "eventId",
         "data": {
             "element": {
-                "sensorId": "sensorId",
+                "sensorId": "sensor1",
                 "date": date,
                 "measurements": [
                     {
@@ -30,5 +30,51 @@ export function getSensorWithSourceInMeasurements (date, source) {
         },
         "timestamp": 1420070400000,
         "type": "element inserted in collection readings"
+    };
+}
+
+export function getReading ({source="forecast", type="temperature"}) {
+    return {
+        "sensorId": "sensor1",
+        "date": "2016-01-28T00:16:36.389Z",
+        "source": source,
+        "measurements": [
+            {
+                "type": type,
+                "value": "0.808",
+                "unitOfMeasurement": "kWh"
+            }
+        ]
+    };
+}
+
+export function getReadingWithMultipleMeasurements () {
+    return {
+        "sensorId": "sensor1",
+        "date": "2016-01-28T00:16:36.389Z",
+        "source": "reading",
+        "measurements": [
+            {
+                "type": "activeEnergy",
+                "value": "1.1",
+                "unitOfMeasurement": "kWh"
+            }, {
+                "type": "temperature",
+                "value": "2.2",
+                "unitOfMeasurement": "kWh"
+            }, {
+                "type": "maxPower",
+                "value": "3.3",
+                "unitOfMeasurement": "kWh"
+            }
+        ]
+    };
+}
+
+export function getFormula () {
+    return {
+        resultId: "site",
+        variables: ["sensor1", "sensor2"],
+        formulaString: "sensor1+sensor2"
     };
 }

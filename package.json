@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "babel": "^5.8.29",
+    "babel-plugin-rewire": "^0.1.22",
     "bluebird": "^3.0.5",
     "dotenv": "^1.2.0",
     "kinesis-router": "^1.2.1",

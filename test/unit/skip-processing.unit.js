@@ -1,8 +1,8 @@
 import {expect} from "chai";
 
-import {getReading} from "../mocks";
+import {getReading} from "../utils";
 
-import {skipProcessing} from "../../src/steps/skip-processing";
+import skipProcessing from "steps/skip-processing";
 
 
 describe("skipProcessing", () => {

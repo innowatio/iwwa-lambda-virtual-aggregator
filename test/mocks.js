@@ -1,3 +1,5 @@
+import BPromise from "bluebird";
+
 function objectToBase64 (object) {
     return new Buffer(
         JSON.stringify(object)
@@ -22,25 +24,21 @@ export function getRecordFromObject (object) {
     };
 }
 
-export function getReading ({source="forecast", type="temperature"}) {
+export function getEventFromArray (array) {
     return {
-        "sensorId": "sensorId",
-        "date": new Date(),
-        "source": source,
-        "measurements": [
-            {
-                "type": type,
-                "value": "0.808",
-                "unitOfMeasurement": "kWh"
-            }
-        ]
+        "Records": array.map(getRecordFromObject)
     };
 }
 
-export function getFormula () {
-    return {
-        "resultId": "Pod1",
-        "variables": ["ANZ01", "ANZ02"],
-        "formula": "ANZ01+ANZ02"
-    };
+export function getEventFromObject (object) {
+    return getEventFromArray([object]);
+}
+
+export function run (handler, event) {
+    return new BPromise((resolve, reject) => {
+        handler(event, {
+            succeed: resolve,
+            fail: reject
+        });
+    });
 }
