@@ -1,10 +1,11 @@
 import router from "kinesis-router";
 
 import skipProcessing from "./steps/skip-processing";
-import findAllFormulaByVariable from "./steps/find-formulas";
+import getAggregate from "./steps/get-aggregate";
 
 
 async function pipeline (event) {
+    // log.info({event});
     const rawReading = event.data.element;
     /*
     *   Workaround: some events have been incorrectly generated and thus don't
@@ -15,22 +16,21 @@ async function pipeline (event) {
         return null;
     }
 
-    // check if use the measures or not
+    // check if use it or not
     if (skipProcessing(rawReading)) {
         return null;
     }
 
+    // find sensor name
     const sensor = rawReading.sensorId;
-    const formulas = findAllFormulaByVariable(sensor);
-
-    // filter measurements
-
-
-
 
     // find related formulas
 
+    // find related sensors readings value
+    
     // calculate all
+
+    // upsert
 
     return null;
 }

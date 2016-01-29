@@ -8,7 +8,7 @@ import {skipProcessing} from "../../src/steps/skip-processing";
 describe("skipProcessing", () => {
 
     it("skips if the source is not a `reading`", () => {
-        const notReading = getReading("forecast", "activeEnergy");
+        const notReading = getReading({source: "forecast", type: "activeEnergy"});
 
         expect(skipProcessing(notReading)).to.be.equals(true);
     });
