@@ -2,6 +2,7 @@ import router from "kinesis-router";
 
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-formulas";
+import filterAllowedMeasurements from "./steps/filter-allowed-measurements";
 
 
 async function pipeline (event) {
@@ -21,14 +22,17 @@ async function pipeline (event) {
     }
 
     const sensor = rawReading.sensorId;
+
+    // find related formulas
     const formulas = findAllFormulaByVariable(sensor);
 
     // filter measurements
+    const filteredReading = filterAllowedMeasurements(rawReading);
 
 
 
 
-    // find related formulas
+
 
     // calculate all
 

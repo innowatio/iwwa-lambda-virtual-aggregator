@@ -1,8 +1,9 @@
 import {propEq, contains} from "ramda";
 
+import * as config from "../services/config";
+
 function checkSource (reading) {
-    const ALLOWED_SOURCES = ["reading"];
-    return contains((reading.source || reading.measurements[0].source), ALLOWED_SOURCES);
+    return contains((reading.source || reading.measurements[0].source), config.ALLOWED_SOURCES);
 }
 
 function checkContainsEnergyMeasures (reading) {

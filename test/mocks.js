@@ -37,6 +37,29 @@ export function getReading ({source="forecast", type="temperature"}) {
     };
 }
 
+export function getReadingWithMultipleMeasurements () {
+    return {
+        "sensorId": "sensorId",
+        "date": new Date(),
+        "source": "reading",
+        "measurements": [
+            {
+                "type": "activeEnergy",
+                "value": "1.1",
+                "unitOfMeasurement": "kWh"
+            }, {
+                "type": "temperature",
+                "value": "2.2",
+                "unitOfMeasurement": "kWh"
+            }, {
+                "type": "maxPower",
+                "value": "3.3",
+                "unitOfMeasurement": "kWh"
+            }
+        ]
+    };
+}
+
 export function getFormula () {
     return {
         "resultId": "Pod1",
