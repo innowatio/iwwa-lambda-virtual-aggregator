@@ -3,7 +3,7 @@ import moment from "moment";
 import {
     AGGREGATES_COLLECTION_NAME,
     MEASUREMENTS_DELTA_IN_MS
-} from "../services/config";
+} from "../config";
 import mongodb from "../services/mongodb";
 
 function getDayFromReading (date) {

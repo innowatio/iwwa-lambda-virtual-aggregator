@@ -1,5 +1,5 @@
-import {AGGREGATES_COLLECTION_NAME} from "../common/config";
-import mongodb from "../common/mongodb";
+import {AGGREGATES_COLLECTION_NAME} from "../config";
+import mongodb from "../services/mongodb";
 
 export default async function upsertAggregate (aggregate) {
     const db = await mongodb;

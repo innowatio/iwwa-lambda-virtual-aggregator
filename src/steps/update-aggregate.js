@@ -1,7 +1,7 @@
 import moment from "moment";
 import {add, reduce, values} from "ramda";
 
-import {MEASUREMENTS_DELTA_IN_MS} from "../services/config";
+import {MEASUREMENTS_DELTA_IN_MS} from "../config";
 
 function convertReadingDate (dateString) {
     const dateInMs = moment.utc(dateString, moment.ISO_8601, true).valueOf();
@@ -14,8 +14,8 @@ function getOffset (reading) {
     return (date - startOfDay) / MEASUREMENTS_DELTA_IN_MS;
 }
 
-function calculateMeasurementValues (virtualMeasurement) {
-    const measurementValues = values(virtualMeasurement.measurementValues);
+function calculateMeasurementValues (virtualAggregate) {
+    const measurementValues = values(virtualAggregate.measurementValues);
     return reduce((acc, measurementValue) => {
         return add(acc, parseFloat(measurementValue));
     }, 0, measurementValues);
@@ -33,16 +33,19 @@ function updateMeasurementValues (measurementValues, offset, measurementValue) {
     return measurementValuesClone;
 }
 
-export default function updateAggregate (aggregate, virtualMeasurement) {
-    const newValues = calculateMeasurementValues(virtualMeasurement);
-    if (isNaN(newValues)) {
-        return aggregate;
+export default function updateAggregate (aggregate, virtualAggregate) {
+    console.log("AAA");
+    console.log(aggregate);
+    console.log(virtualAggregate);
+    const newMeasurementValues = calculateMeasurementValues(virtualAggregate);
+    if (isNaN(newMeasurementValues)) {
+        return virtualAggregate;
     }
-    const offset = getOffset(virtualMeasurement);
+    const offset = getOffset(virtualAggregate);
     return {
         ...aggregate,
         measurementValues: updateMeasurementValues(
-            aggregate.measurementValues, offset, newValues
+            aggregate.measurementValues, offset, newMeasurementValues
         )
     };
 }

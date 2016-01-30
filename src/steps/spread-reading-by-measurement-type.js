@@ -1,7 +1,7 @@
 import assert from "assert";
 import {contains, is, isNil, path} from "ramda";
 
-import * as config from "../services/config";
+import * as config from "../config";
 
 function getReadingSource (reading) {
     const source = (

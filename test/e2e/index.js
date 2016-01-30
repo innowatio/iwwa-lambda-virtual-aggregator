@@ -1,45 +1,45 @@
 // import {expect} from "chai";
 
 import mongodb from "services/mongodb";
-import * as config from "services/config";
+import * as config from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
 
-describe("`iwwa-lambda-virtual-aggregator`", async () => {
+describe("`iwwa-lambda-virtual-aggregator`", () => {
 
     var aggregates;
     var formulas;
     var db;
 
     const aggregateMock = {
-        _id: "sensor1-2016-01-28-reading-activeEnergy",
+        _id: "sensor2-2016-01-28-reading-activeEnergy",
         sensorId: "sensor2",
         day: "2016-01-28",
         source: "reading",
         measurementType: "activeEnergy",
         unitOfMeasurement: "kWh",
-        measurementValues: "1,2,3,4"
+        measurementValues: "1,2,3,4,5,6,7,8"
     };
 
     before(async () => {
         db = await mongodb;
         aggregates = db.collection(config.AGGREGATES_COLLECTION_NAME);
-        aggregates.update({}, aggregateMock, {upsert: true});
         formulas = db.collection(config.FORMULAS_COLLECTION);
-        formulas.update({}, getFormula(), {upsert: true});
     });
     after(async () => {
-        await db.dropCollection(config.AGGREGATES_COLLECTION_NAME);
-        await db.dropCollection(config.FORMULAS_COLLECTION);
+        // await db.dropCollection(config.AGGREGATES_COLLECTION_NAME);
+        // await db.dropCollection(config.FORMULAS_COLLECTION);
         await db.close();
     });
     beforeEach(async () => {
         await aggregates.remove({});
         await formulas.remove({});
+        await aggregates.update({}, aggregateMock, {upsert: true});
+        await formulas.update({}, getFormula(), {upsert: true});
     });
 
-    it("should return an array of the virtual measurement", async () => {
+    it("should return", async () => {
         const event = getEventFromObject(
             getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
         );

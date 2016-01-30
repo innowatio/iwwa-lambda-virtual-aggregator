@@ -1,6 +1,6 @@
 import moment from "moment";
 
-import {MEASUREMENTS_DELTA_IN_MS} from "../services/config";
+import {MEASUREMENTS_DELTA_IN_MS} from "../../config";
 
 function convertReadingDate (dateString) {
     const dateInMs = moment.utc(dateString, moment.ISO_8601, true).valueOf();

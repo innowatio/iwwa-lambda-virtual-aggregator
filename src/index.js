@@ -1,3 +1,4 @@
+import "babel/polyfill";
 import router from "kinesis-router";
 import {map} from "bluebird";
 import {isEmpty} from "ramda";
@@ -5,19 +6,19 @@ import {isEmpty} from "ramda";
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
 import spreadReadingByMeasurementType from "./steps/spread-reading-by-measurement-type";
-import createVirtualMeasurement from "./steps/create-virtual-measurement";
+import createVirtualAggregate from "./steps/create-virtual-aggregate/";
 import getOrCreateVirtualAggregate from "./steps/get-or-create-virtual-aggregate";
 import parseAggregate from "./steps/parse-aggregate";
 import updateAggregate from "./steps/update-aggregate";
 import stringifyAggregate from "./steps/stringify-aggregate";
 import upsertAggregate from "./steps/update-aggregate";
 
-async function calculateVirtualAggregate (virtualMeasurement) {
-    const virtualAggregate = await getOrCreateVirtualAggregate(virtualMeasurement);
-    const parsedAggregate = parseAggregate(virtualAggregate);
-    const updatedParsedAggregate = updateAggregate(parsedAggregate, virtualMeasurement);
-    const updatedAggregate = stringifyAggregate(updatedParsedAggregate);
-    return upsertAggregate(updatedAggregate);
+async function calculateVirtualAggregate (virtualAggregatesToCalculate) {
+    const virtualAggregate = await getOrCreateVirtualAggregate(virtualAggregatesToCalculate);
+    const parsedVirtualAggregate = parseAggregate(virtualAggregate);
+    const updatedParsedVirtualAggregate = updateAggregate(parsedVirtualAggregate, virtualAggregatesToCalculate);
+    const updatedVirtualAggregate = stringifyAggregate(updatedParsedVirtualAggregate);
+    return upsertAggregate(updatedVirtualAggregate);
 }
 async function pipeline (event) {
     // log.info({event});
@@ -42,9 +43,12 @@ async function pipeline (event) {
         return null;
     }
     // find related sensors readings value
-    const virtualMeasurements = await createVirtualMeasurement(readings, formulas);
+    const virtualAggregatesToCalculate = await createVirtualAggregate(readings, formulas);
+    if (isEmpty(virtualAggregatesToCalculate)) {
+        return null;
+    }
     // calculate all and upsert
-    await map(virtualMeasurements, calculateVirtualAggregate);
+    await map(virtualAggregatesToCalculate, calculateVirtualAggregate);
 
     return null;
 }

@@ -1,6 +1,6 @@
 import {propEq, contains} from "ramda";
 
-import * as config from "../services/config";
+import * as config from "../config";
 
 function checkSource (reading) {
     return contains((reading.source || reading.measurements[0].source), config.ALLOWED_SOURCES);

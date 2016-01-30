@@ -1,4 +1,4 @@
-import {FORMULAS_COLLECTION} from "../services/config";
+import {FORMULAS_COLLECTION} from "../config";
 import mongodb from "../services/mongodb";
 
 export default async function findAllFormulaByVariable (variable) {
