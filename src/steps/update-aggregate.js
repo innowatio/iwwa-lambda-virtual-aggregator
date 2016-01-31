@@ -34,9 +34,6 @@ function updateMeasurementValues (measurementValues, offset, measurementValue) {
 }
 
 export default function updateAggregate (aggregate, virtualAggregate) {
-    console.log("AAA");
-    console.log(aggregate);
-    console.log(virtualAggregate);
     const newMeasurementValues = calculateMeasurementValues(virtualAggregate);
     if (isNaN(newMeasurementValues)) {
         return virtualAggregate;

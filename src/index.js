@@ -11,7 +11,7 @@ import getOrCreateVirtualAggregate from "./steps/get-or-create-virtual-aggregate
 import parseAggregate from "./steps/parse-aggregate";
 import updateAggregate from "./steps/update-aggregate";
 import stringifyAggregate from "./steps/stringify-aggregate";
-import upsertAggregate from "./steps/update-aggregate";
+import upsertAggregate from "./steps/upsert-aggregate";
 
 async function calculateVirtualAggregate (virtualAggregatesToCalculate) {
     const virtualAggregate = await getOrCreateVirtualAggregate(virtualAggregatesToCalculate);
