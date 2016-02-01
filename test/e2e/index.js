@@ -154,6 +154,30 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
         });
 
+        it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
+            const event = getEventFromObject(
+                getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
+            );
+            await formulas.remove({});
+            await formulas.insert({
+                resultId: "site",
+                variables: ["sensor1"],
+                formulaString: "sensor1"
+            });
+            await run(handler, event);
+            const aggregate1 = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
+            expect(aggregate1).to.deep.equal({
+                _id: "site-2016-01-28-reading-activeEnergy",
+                sensorId: "site",
+                day: "2016-01-28",
+                source: "reading",
+                measurementType: "activeEnergy",
+                unitOfMeasurement: "kWh",
+                measurementValues: ",,,,0.808",
+                measurementsDeltaInMs: 300000
+            });
+        });
+
         it("with a correct virtual aggregate for every `measurementType`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")

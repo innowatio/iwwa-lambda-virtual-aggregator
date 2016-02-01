@@ -11,6 +11,7 @@ Aggregator for virtual-pods
 - `AWS_DEFAULT_REGION`
 - `LAMBDA_NAME`
 - `LAMBDA_ROLE_ARN`
+- `S3_BUCKET`
 
 - `__FUNC_CONFIG__MONGODB_URL`
 - `__FUNC_CONFIG__DEBUG`
