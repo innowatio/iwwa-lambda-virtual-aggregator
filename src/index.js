@@ -12,14 +12,9 @@ import parseAggregate from "./steps/parse-aggregate";
 import updateAggregate from "./steps/update-aggregate";
 import stringifyAggregate from "./steps/stringify-aggregate";
 import upsertAggregate from "./steps/upsert-aggregate";
+import resolveFormulas from "./steps/resolve-formulas";
+import postSensorEvent from "./steps/post-sensor-event";
 
-async function calculateVirtualAggregate (virtualAggregatesToCalculate) {
-    const virtualAggregate = await getOrCreateVirtualAggregate(virtualAggregatesToCalculate);
-    const parsedVirtualAggregate = parseAggregate(virtualAggregate);
-    const updatedParsedVirtualAggregate = updateAggregate(parsedVirtualAggregate, virtualAggregatesToCalculate);
-    const updatedVirtualAggregate = stringifyAggregate(updatedParsedVirtualAggregate);
-    return upsertAggregate(updatedVirtualAggregate);
-}
 async function pipeline (event) {
     // log.info({event});
     const rawReading = event.data.element;
@@ -48,7 +43,13 @@ async function pipeline (event) {
         return null;
     }
     // calculate all and upsert
-    await map(virtualAggregatesToCalculate, calculateVirtualAggregate);
+    console.log(virtualAggregatesToCalculate);
+    const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
+    const sensors = virtualAggregatesToSubmit.map(agg => agg.sensorId);
+    // push group by sensorId
+    await sensors.map(sensor => {
+        return virtualAggregatesToSubmit.filter(agg => agg.sensorId === sensor);
+    }, postSensorEvent);
 
     return null;
 }

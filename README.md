@@ -12,6 +12,7 @@ Aggregator for virtual-pods
 - `LAMBDA_NAME`
 - `LAMBDA_ROLE_ARN`
 - `S3_BUCKET`
+- `READINGS_API_ENDPOINT`
 
 - `__FUNC_CONFIG__MONGODB_URL`
 - `__FUNC_CONFIG__DEBUG`

@@ -12,7 +12,7 @@ function getDefaultVirtualAggregate (reading, formula) {
         formula: formula.formulaString,
         unitOfMeasurement: reading.unitOfMeasurement,
         measurementValues: {
-            [reading.sensorId]: reading.measurementValue
+            [reading.sensorId]: parseFloat(reading.measurementValue)
         }
     };
 }
