@@ -8,7 +8,7 @@ function createBody (aggregates) {
         source: aggregates[0].source,
         measurements: aggregates.map(agg => {
             return {
-                type: agg.type,
+                type: agg.measurementType,
                 value: agg.result,
                 unitOfMeasurement: agg.unitOfMeasurement
             };
@@ -16,12 +16,10 @@ function createBody (aggregates) {
     };
 }
 
-export default function postSensorEvent (aggregates) {
-    axios.post(READINGS_API_ENDPOINT, createBody(aggregates))
-        .then((e) => {
-            console.log(e);
-        })
-        .catch((e) => {
-            console.log(e);
-        });
+export default async function postSensorEvent (aggregates) {
+    try {
+        await axios.post(READINGS_API_ENDPOINT, createBody(aggregates));
+    } catch (e) {
+        console.log(e);
+    }
 }

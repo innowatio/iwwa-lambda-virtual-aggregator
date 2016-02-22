@@ -1,7 +1,7 @@
 import "babel/polyfill";
 import router from "kinesis-router";
 import {map} from "bluebird";
-import {isEmpty} from "ramda";
+import {isEmpty, uniq} from "ramda";
 
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
@@ -43,13 +43,12 @@ async function pipeline (event) {
         return null;
     }
     // calculate all and upsert
-    console.log(virtualAggregatesToCalculate);
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
-    const sensors = virtualAggregatesToSubmit.map(agg => agg.sensorId);
+    const sensors = uniq(virtualAggregatesToSubmit.map(agg => agg.sensorId));
     // push group by sensorId
-    await sensors.map(sensor => {
+    await (sensors.map(sensor => {
         return virtualAggregatesToSubmit.filter(agg => agg.sensorId === sensor);
-    }, postSensorEvent);
+    }).map(postSensorEvent));
 
     return null;
 }
