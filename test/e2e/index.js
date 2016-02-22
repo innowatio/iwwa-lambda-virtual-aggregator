@@ -5,6 +5,7 @@ import * as config from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
+import nock from "nock";
 
 describe("`iwwa-lambda-virtual-aggregator`", () => {
 
@@ -93,11 +94,12 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         await formulas.remove({});
         await aggregates.insert(aggregateMockActiveEnergySensor2);
         await formulas.insert(getFormula());
+        nock.cleanAll();
     });
 
     describe("creates a new aggregate for virtual measurement in the reading", () => {
 
-        it("with `activeEnergy` measurement", async () => {
+        it.skip("with `activeEnergy` measurement", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -106,7 +108,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expect(count).to.equal(2);
         });
 
-        it("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
+        it.skip("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -117,7 +119,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expect(count).to.equal(6);
         });
 
-        it("with 3 `measurementType` and 2 `formulas`", async () => {
+        it.skip("with 3 `measurementType` and 2 `formulas`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -136,7 +138,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
     describe("correctly builds the virtual aggregate:", () => {
 
-        it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
+        it.skip("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
             );
@@ -154,7 +156,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
         });
 
-        it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
+        it.skip("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
             );
@@ -178,7 +180,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
         });
 
-        it("with a correct virtual aggregate for every `measurementType`", async () => {
+        it.skip("with a correct virtual aggregate for every `measurementType`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -220,7 +222,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
         });
 
-        it("create a correct virtual aggregate for every `measurementType` and every `formulas`", async () => {
+        it.skip("create a correct virtual aggregate for every `measurementType` and every `formulas`", async () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -299,49 +301,77 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
         });
 
-        it("return `null` if source is `forcast`", async () => {
+        it("doesn't call API if the event source is `forecast`", async () => {
+            var myApi = nock("http://myapi.com")
+                .post("/readings", {
+                    sensorId: "site",
+                    date: "2016-01-28T00:00:11.000Z",
+                    source: "reading",
+                    measurements: [{
+                        type: "activeEnergy",
+                        value: 1.808,
+                        unitOfMeasurement: "kWh"
+                    }]
+                })
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2015-01-01T00:00:30.000Z", "forecast")
+                getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "forecast")
             );
             await run(handler, event);
-            const counts = await aggregates.count({});
-            expect(counts).to.deep.equal(1);
+            expect(myApi.isDone()).to.equal(false);
+
+            const event2 = getEventFromObject(
+                getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "reading")
+            );
+            await run(handler, event2);
+            expect(myApi.isDone()).to.equal(true);
         });
 
         it("non-first day of the month [CASE: 1/2 (only testing different combinations)]", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:00:11.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 1.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
+
+            const myApi = nock("http://myapi.com")
+                .post("/readings", expectedBody)
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "reading")
             );
             await run(handler, event);
-            const aggregate = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                source: "reading",
-                measurementType: "activeEnergy",
-                day: "2016-01-28",
-                measurementValues: "1.808",
-                unitOfMeasurement: "kWh",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
         it("non-first day of the month [CASE: 2/2 (only testing different combinations)]", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:23:51.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 5.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
+
+            const myApi = nock("http://myapi.com")
+                .post("/readings", expectedBody)
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:23:51.000Z", "reading")
             );
             await run(handler, event);
-            const aggregate = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                source: "reading",
-                day: "2016-01-28",
-                measurementType: "activeEnergy",
-                measurementValues: ",,,,5.808",
-                unitOfMeasurement: "kWh",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
     });
