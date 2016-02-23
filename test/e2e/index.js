@@ -99,27 +99,93 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
     describe("creates a new aggregate for virtual measurement in the reading", () => {
 
-        it.skip("with `activeEnergy` measurement", async () => {
+        it("with `activeEnergy` measurement", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
+
+            var myApi = nock("http://myapi.com")
+                .post("/readings", expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(2);
+            myApi.done();
         });
 
-        it.skip("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
+        it("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
+
+            var myApi = nock("http://myapi.com")
+                .post("/readings", expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(6);
+            myApi.done();
         });
 
-        it.skip("with 3 `measurementType` and 2 `formulas`", async () => {
+        it("with 3 `measurementType` and 2 `formulas`", async () => {
+            const expectedBody1 = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+            const expectedBody2 = {
+                sensorId: "site2",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "reactiveEnergy",
+                    value: 7.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 3.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -130,8 +196,14 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockMaxPowerSensor3);
             await formulas.insert(mockFormulas);
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(12);
+
+            var myApi = nock("http://myapi.com")
+                .post("/readings", expectedBody1)
+                .reply(200, {result: "Ok"})
+                .post("/readings", expectedBody2)
+                .reply(200, {result: "Ok"});
+            await run(handler, event);
+            myApi.done();
         });
 
     });
