@@ -79,6 +79,14 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         formula: "sensor1+sensor2+sensor3"
     };
 
+    const api = () => {
+        const lastSlashIndex = config.READINGS_API_ENDPOINT.lastIndexOf("/");
+        return {
+            url: config.READINGS_API_ENDPOINT.substring(0, lastSlashIndex),
+            route: config.READINGS_API_ENDPOINT.substring(lastSlashIndex, config.READINGS_API_ENDPOINT.length)
+        };
+    };
+
     before(async () => {
         db = await mongodb;
         aggregates = db.collection(config.AGGREGATES_COLLECTION_NAME);
@@ -114,8 +122,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -146,8 +154,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -197,10 +205,10 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await formulas.insert(mockFormulas);
             await run(handler, event);
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody1)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody1)
                 .reply(200, {result: "Ok"})
-                .post("/readings", expectedBody2)
+                .post(api().route, expectedBody2)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -226,8 +234,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             );
             await run(handler, event);
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -263,8 +271,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 formulaString: "sensor1"
             });
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -296,8 +304,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
@@ -346,18 +354,18 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockMaxPowerSensor3);
             await formulas.insert(mockFormulas);
 
-            var myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody1)
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody1)
                 .reply(200, {result: "Ok"})
-                .post("/readings", expectedBody2)
+                .post(api().route, expectedBody2)
                 .reply(200, {result: "Ok"});
             await run(handler, event);
             myApi.done();
         });
 
         it("doesn't call API if the event source is `forecast`", async () => {
-            var myApi = nock("http://myapi.com")
-                .post("/readings", {
+            var myApi = nock(api().url)
+                .post(api().route, {
                     sensorId: "site",
                     date: "2016-01-28T00:00:11.000Z",
                     source: "reading",
@@ -394,8 +402,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 }]
             };
 
-            const myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            const myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
 
             const event = getEventFromObject(
@@ -417,8 +425,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 }]
             };
 
-            const myApi = nock("http://myapi.com")
-                .post("/readings", expectedBody)
+            const myApi = nock(api().url)
+                .post(api().route, expectedBody)
                 .reply(200, {result: "Ok"});
 
             const event = getEventFromObject(
