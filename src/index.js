@@ -1,17 +1,11 @@
 import "babel/polyfill";
 import router from "kinesis-router";
-import {map} from "bluebird";
 import {isEmpty, uniq} from "ramda";
 
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
 import spreadReadingByMeasurementType from "./steps/spread-reading-by-measurement-type";
 import createVirtualAggregate from "./steps/create-virtual-aggregate/";
-import getOrCreateVirtualAggregate from "./steps/get-or-create-virtual-aggregate";
-import parseAggregate from "./steps/parse-aggregate";
-import updateAggregate from "./steps/update-aggregate";
-import stringifyAggregate from "./steps/stringify-aggregate";
-import upsertAggregate from "./steps/upsert-aggregate";
 import resolveFormulas from "./steps/resolve-formulas";
 import postSensorEvent from "./steps/post-sensor-event";
 
