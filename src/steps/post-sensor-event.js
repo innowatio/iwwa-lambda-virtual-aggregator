@@ -8,7 +8,7 @@ function createBody (aggregates) {
         date: aggregates[0].date,
         source: aggregates[0].source,
         measurements: aggregates.map(agg => {
-            if (agg.result) {
+            if ((!isNaN(agg.result)) && (!isNil(agg.result))) {
                 return {
                     type: agg.measurementType,
                     value: agg.result,
