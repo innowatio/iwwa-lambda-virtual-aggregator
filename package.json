@@ -8,6 +8,7 @@
     "url": "https://github.com/innowatio/iwwa-lambda-virtual-aggregator"
   },
   "dependencies": {
+    "axios": "^0.9.1",
     "babel": "^5.8.29",
     "babel-plugin-rewire": "^0.1.22",
     "bluebird": "^3.0.5",
