@@ -203,7 +203,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockReactiveEnergySensor3);
             await aggregates.insert(aggregateMockMaxPowerSensor3);
             await formulas.insert(mockFormulas);
-            await run(handler, event);
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody1)
@@ -232,7 +231,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
             );
-            await run(handler, event);
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody)
