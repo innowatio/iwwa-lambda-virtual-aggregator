@@ -1,6 +1,7 @@
 import "babel/polyfill";
 import router from "kinesis-router";
 import {isEmpty, uniq} from "ramda";
+import {all} from "bluebird";
 
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
@@ -40,7 +41,7 @@ async function pipeline (event) {
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
     const sensors = uniq(virtualAggregatesToSubmit.map(agg => agg.sensorId));
     // push group by sensorId
-    await (sensors.map(sensor => {
+    await all(sensors.map(sensor => {
         return virtualAggregatesToSubmit.filter(agg => agg.sensorId === sensor);
     }).map(postSensorEvent));
 
