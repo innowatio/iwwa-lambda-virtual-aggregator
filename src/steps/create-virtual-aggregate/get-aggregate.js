@@ -7,13 +7,15 @@ function getDayFromReading (date) {
     return moment.utc(date, moment.ISO_8601, true).format("YYYY-MM-DD");
 }
 
+function getAggregateId (reading) {
+    const {sensorId, date, source, measurementType} = reading;
+    return `${sensorId}-${getDayFromReading(date)}-${source}-${measurementType}`;
+}
+
 export default async function getAggregate (sensorId, measurementType, source, date) {
     const db = await mongodb;
     const query = {
-        sensorId,
-        day: getDayFromReading(date),
-        source,
-        measurementType
+        _id: getAggregateId({sensorId, measurementType, source, date})
     };
     return await db.collection(AGGREGATES_COLLECTION_NAME).findOne(query);
 }

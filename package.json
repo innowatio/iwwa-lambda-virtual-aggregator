@@ -35,7 +35,7 @@
   },
   "scripts": {
     "codecov": "codecov",
-    "coverage": "NODE_ENV=test NODE_PATH=src babel-node $(npm bin)/isparta cover $(npm bin)/_mocha -- --recursive",
+    "coverage": "NODE_ENV=test NODE_PATH=src babel-node $(npm bin)/isparta cover node_modules/mocha/bin/_mocha -- --recursive",
     "deploy": "gulp deploy",
     "dev": "npm test -- --watch",
     "lint": "eslint src test",
