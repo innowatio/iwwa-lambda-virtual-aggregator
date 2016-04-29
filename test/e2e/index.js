@@ -5,6 +5,7 @@ import * as config from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
+import nock from "nock";
 
 describe("`iwwa-lambda-virtual-aggregator`", () => {
 
@@ -78,6 +79,14 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         formula: "sensor1+sensor2+sensor3"
     };
 
+    const api = () => {
+        const lastSlashIndex = config.READINGS_API_ENDPOINT.lastIndexOf("/");
+        return {
+            url: config.READINGS_API_ENDPOINT.substring(0, lastSlashIndex),
+            route: config.READINGS_API_ENDPOINT.substring(lastSlashIndex, config.READINGS_API_ENDPOINT.length)
+        };
+    };
+
     before(async () => {
         db = await mongodb;
         aggregates = db.collection(config.AGGREGATES_COLLECTION_NAME);
@@ -89,6 +98,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         await db.close();
     });
     beforeEach(async () => {
+        nock.cleanAll();
         await aggregates.remove({});
         await formulas.remove({});
         await aggregates.insert(aggregateMockActiveEnergySensor2);
@@ -98,26 +108,92 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     describe("creates a new aggregate for virtual measurement in the reading", () => {
 
         it("with `activeEnergy` measurement", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(2);
+            myApi.done();
         });
 
         it("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(6);
+            myApi.done();
         });
 
         it("with 3 `measurementType` and 2 `formulas`", async () => {
+            const expectedBody1 = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+            const expectedBody2 = {
+                sensorId: "site2",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "reactiveEnergy",
+                    value: 7.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 3.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -127,9 +203,14 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockReactiveEnergySensor3);
             await aggregates.insert(aggregateMockMaxPowerSensor3);
             await formulas.insert(mockFormulas);
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody1)
+                .reply(200, {result: "Ok"})
+                .post(api().route, expectedBody2)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const count = await aggregates.count({});
-            expect(count).to.equal(12);
+            myApi.done();
         });
 
     });
@@ -137,66 +218,130 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     describe("correctly builds the virtual aggregate:", () => {
 
         it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:22:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 5.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
             );
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const aggregate1 = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate1).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
+            myApi.done();
+        });
+
+        it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
+            const expectedBody = {
                 sensorId: "site",
-                day: "2016-01-28",
+                date: "2016-01-28T00:22:36.389Z",
                 source: "reading",
-                measurementType: "activeEnergy",
-                unitOfMeasurement: "kWh",
-                measurementValues: ",,,,5.808",
-                measurementsDeltaInMs: 300000
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 0.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: -0.085,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+
+            const event = getEventFromObject(
+                getSensorWithSourceInMeasurements("2016-01-28T00:22:36.389Z", "reading")
+            );
+            await formulas.remove({});
+            await formulas.insert({
+                resultId: "site",
+                variables: ["sensor1"],
+                formulaString: "sensor1"
             });
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
+            await run(handler, event);
+            myApi.done();
         });
 
         it("with a correct virtual aggregate for every `measurementType`", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:17:00.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
+                getSensorWithSourceInMeasurements("2016-01-28T00:17:00.389Z", "reading")
             );
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const aggregate1 = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate1).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "activeEnergy",
-                unitOfMeasurement: "kWh",
-                measurementValues: ",,,4.808",
-                measurementsDeltaInMs: 300000
-            });
-            const aggregate2 = await aggregates.findOne({_id: "site-2016-01-28-reading-reactiveEnergy"});
-            expect(aggregate2).to.deep.equal({
-                _id: "site-2016-01-28-reading-reactiveEnergy",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "reactiveEnergy",
-                unitOfMeasurement: "kVArh",
-                measurementValues: ",,,0.315",
-                measurementsDeltaInMs: 300000
-            });
-            const aggregate3 = await aggregates.findOne({_id: "site-2016-01-28-reading-maxPower"});
-            expect(aggregate3).to.deep.equal({
-                _id: "site-2016-01-28-reading-maxPower",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "maxPower",
-                unitOfMeasurement: "VAr",
-                measurementValues: ",,,0.9",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
-        it("create a correct virtual aggregate for every `measurementType` and every `formulas`", async () => {
+        it("create a correct post for every and every `resultId` in `formulas`", async () => {
+            const expectedBody1 = {
+                sensorId: "site",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+            const expectedBody2 = {
+                sensorId: "site2",
+                date: "2016-01-28T00:16:36.389Z",
+                source: "reading",
+                measurements: [{
+                    type: "reactiveEnergy",
+                    value: 7.315,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 3.9,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
@@ -206,118 +351,87 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             await aggregates.insert(aggregateMockReactiveEnergySensor3);
             await aggregates.insert(aggregateMockMaxPowerSensor3);
             await formulas.insert(mockFormulas);
+
+            var myApi = nock(api().url)
+                .post(api().route, expectedBody1)
+                .reply(200, {result: "Ok"})
+                .post(api().route, expectedBody2)
+                .reply(200, {result: "Ok"});
             await run(handler, event);
-            const aggregate1 = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            const aggregate2 = await aggregates.findOne({_id: "site-2016-01-28-reading-reactiveEnergy"});
-            const aggregate3 = await aggregates.findOne({_id: "site-2016-01-28-reading-maxPower"});
-            const aggregate4 = await aggregates.findOne({_id: "site2-2016-01-28-reading-activeEnergy"});
-            const aggregate5 = await aggregates.findOne({_id: "site2-2016-01-28-reading-reactiveEnergy"});
-            const aggregate6 = await aggregates.findOne({_id: "site2-2016-01-28-reading-maxPower"});
-            expect(aggregate1).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "activeEnergy",
-                unitOfMeasurement: "kWh",
-                measurementValues: ",,,4.808",
-                measurementsDeltaInMs: 300000
-            });
-            expect(aggregate2).to.deep.equal({
-                _id: "site-2016-01-28-reading-reactiveEnergy",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "reactiveEnergy",
-                unitOfMeasurement: "kVArh",
-                measurementValues: ",,,0.315",
-                measurementsDeltaInMs: 300000
-            });
-            expect(aggregate3).to.deep.equal({
-                _id: "site-2016-01-28-reading-maxPower",
-                sensorId: "site",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "maxPower",
-                unitOfMeasurement: "VAr",
-                measurementValues: ",,,0.9",
-                measurementsDeltaInMs: 300000
-            });
-            expect(aggregate4).to.deep.equal({
-                _id: "site2-2016-01-28-reading-activeEnergy",
-                sensorId: "site2",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "activeEnergy",
-                unitOfMeasurement: "kWh",
-                measurementValues: "",
-                measurementsDeltaInMs: 300000
-            });
-            expect(aggregate5).to.deep.equal({
-                _id: "site2-2016-01-28-reading-reactiveEnergy",
-                sensorId: "site2",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "reactiveEnergy",
-                unitOfMeasurement: "kVArh",
-                measurementValues: ",,,7.315",
-                measurementsDeltaInMs: 300000
-            });
-            expect(aggregate6).to.deep.equal({
-                _id: "site2-2016-01-28-reading-maxPower",
-                sensorId: "site2",
-                day: "2016-01-28",
-                source: "reading",
-                measurementType: "maxPower",
-                unitOfMeasurement: "VAr",
-                measurementValues: ",,,3.9",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
-        it("return `null` if source is `forcast`", async () => {
+        it("doesn't call API if the event source is `forecast`", async () => {
+            var myApi = nock(api().url)
+                .post(api().route, {
+                    sensorId: "site",
+                    date: "2016-01-28T00:00:11.000Z",
+                    source: "reading",
+                    measurements: [{
+                        type: "activeEnergy",
+                        value: 1.808,
+                        unitOfMeasurement: "kWh"
+                    }]
+                })
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2015-01-01T00:00:30.000Z", "forecast")
+                getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "forecast")
             );
             await run(handler, event);
-            const counts = await aggregates.count({});
-            expect(counts).to.deep.equal(1);
+            expect(myApi.isDone()).to.equal(false);
+
+            const event2 = getEventFromObject(
+                getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "reading")
+            );
+            await run(handler, event2);
+            expect(myApi.isDone()).to.equal(true);
         });
 
         it("non-first day of the month [CASE: 1/2 (only testing different combinations)]", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:00:11.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 1.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
+
+            const myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "reading")
             );
             await run(handler, event);
-            const aggregate = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                source: "reading",
-                measurementType: "activeEnergy",
-                day: "2016-01-28",
-                measurementValues: "1.808",
-                unitOfMeasurement: "kWh",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
         it("non-first day of the month [CASE: 2/2 (only testing different combinations)]", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:23:51.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 5.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
+
+            const myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "Ok"});
+
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:23:51.000Z", "reading")
             );
             await run(handler, event);
-            const aggregate = await aggregates.findOne({_id: "site-2016-01-28-reading-activeEnergy"});
-            expect(aggregate).to.deep.equal({
-                _id: "site-2016-01-28-reading-activeEnergy",
-                sensorId: "site",
-                source: "reading",
-                day: "2016-01-28",
-                measurementType: "activeEnergy",
-                measurementValues: ",,,,5.808",
-                unitOfMeasurement: "kWh",
-                measurementsDeltaInMs: 300000
-            });
+            myApi.done();
         });
 
     });

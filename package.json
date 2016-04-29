@@ -8,6 +8,7 @@
     "url": "https://github.com/innowatio/iwwa-lambda-virtual-aggregator"
   },
   "dependencies": {
+    "axios": "^0.9.1",
     "babel": "^5.8.29",
     "babel-plugin-rewire": "^0.1.22",
     "bluebird": "^3.0.5",
@@ -15,6 +16,7 @@
     "kinesis-router": "^1.2.1",
     "moment": "^2.11.1",
     "mongodb": "^2.0.48",
+    "nock": "^7.2.2",
     "ramda": "^0.19.1"
   },
   "devDependencies": {
@@ -24,6 +26,7 @@
     "chai": "^3.4.1",
     "chai-as-promised": "^5.1.0",
     "codecov": "^1.0.1",
+    "escope": "3.3.0",
     "eslint": "^1.9.0",
     "gulp": "^3.9.0",
     "gulp-eslint": "^1.0.0",
