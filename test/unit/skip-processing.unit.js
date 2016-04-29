@@ -4,7 +4,6 @@ import {getReading} from "../utils";
 
 import skipProcessing from "steps/skip-processing";
 
-
 describe("skipProcessing", () => {
 
     it("skips if the source is not a `reading`", () => {

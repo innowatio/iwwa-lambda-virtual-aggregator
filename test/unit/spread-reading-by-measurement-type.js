@@ -4,7 +4,6 @@ import {getReadingWithMultipleMeasurements} from "../utils";
 
 import spreadReadingByMeasurementType from "steps/spread-reading-by-measurement-type";
 
-
 describe("filterAllowedMeasurements", () => {
 
     it("keeps only the measurements with the allowed energy types", () => {
@@ -24,7 +23,6 @@ describe("filterAllowedMeasurements", () => {
             source: "reading"
         }];
         var reading = getReadingWithMultipleMeasurements();
-
         const result = spreadReadingByMeasurementType(reading);
         expect(result.length).to.be.equals(2);
         expect(result).to.deep.equals(measure);

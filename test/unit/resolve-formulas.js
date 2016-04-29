@@ -2,7 +2,6 @@ import {expect} from "chai";
 
 import resolveFormulas from "steps/resolve-formulas";
 
-
 describe("resolveFormulas", () => {
 
     it("should properly resolve the given aggregates", () => {
