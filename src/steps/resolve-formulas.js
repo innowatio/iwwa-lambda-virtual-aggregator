@@ -10,7 +10,6 @@ function applyFormula (aggregate) {
 }
 
 export default function resolveFormulas (virtualAggregates) {
-    // virtualAggregates.map
     return virtualAggregates.map(aggregate => {
         return applyFormula(aggregate);
     });

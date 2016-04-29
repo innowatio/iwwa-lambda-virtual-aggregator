@@ -1,6 +1,7 @@
 import {isEmpty, uniq} from "ramda";
 import {all} from "bluebird";
 
+import log from "./services/logger";
 import skipProcessing from "./steps/skip-processing";
 import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
 import spreadReadingByMeasurementType from "./steps/spread-reading-by-measurement-type";
@@ -9,7 +10,7 @@ import resolveFormulas from "./steps/resolve-formulas";
 import postSensorEvent from "./steps/post-sensor-event";
 
 export default async function pipeline (event) {
-    // log.info({event});
+    log.info({event});
     const rawReading = event.data.element;
     /*
     *   Workaround: some events have been incorrectly generated and thus don't
@@ -35,7 +36,7 @@ export default async function pipeline (event) {
     if (isEmpty(virtualAggregatesToCalculate)) {
         return null;
     }
-    // calculate all and upsert
+    // calculate all
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
     const sensors = uniq(virtualAggregatesToSubmit.map(agg => agg.sensorId));
     // push group by sensorId
