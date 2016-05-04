@@ -10,7 +10,7 @@ import resolveFormulas from "./steps/resolve-formulas";
 import postSensorEvent from "./steps/post-sensor-event";
 
 export default async function pipeline (event) {
-    log.info({event});
+    log.info(event, "event");
     const rawReading = event.data.element;
     /*
     *   Workaround: some events have been incorrectly generated and thus don't
@@ -20,26 +20,29 @@ export default async function pipeline (event) {
     if (!rawReading) {
         return null;
     }
-    // check if use it or not
+    // Check if use it or not
     if (skipProcessing(rawReading)) {
         return null;
     }
     // Filter and spread reading
     const readings = spreadReadingByMeasurementType(rawReading);
-    // find related formulas
+    // Find related formulas
     const formulas = await findAllFormulaByVariable(rawReading.sensorId);
     if (isEmpty(formulas)) {
         return null;
     }
-    // find related sensors readings value
+    // Find related sensors readings value
     const virtualAggregatesToCalculate = await createVirtualAggregate(readings, formulas);
     if (isEmpty(virtualAggregatesToCalculate)) {
         return null;
     }
-    // calculate all
+    // Calculate all
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
+    if (isEmpty(virtualAggregatesToSubmit)) {
+        return null;
+    }
     const sensors = uniq(virtualAggregatesToSubmit.map(agg => agg.sensorId));
-    // push group by sensorId
+    // Push group by sensorId
     await all(sensors.map(sensor => {
         return virtualAggregatesToSubmit.filter(agg => agg.sensorId === sensor);
     }).map(postSensorEvent));

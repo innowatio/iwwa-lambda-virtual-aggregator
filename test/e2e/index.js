@@ -1,7 +1,8 @@
 import {expect} from "chai";
+import moment from "moment";
 
 import mongodb from "services/mongodb";
-import * as config from "config";
+import {READINGS_API_ENDPOINT, AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION} from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
@@ -20,7 +21,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "activeEnergy",
         unitOfMeasurement: "kWh",
-        measurementValues: "1,2,3,4,5,6,7,8"
+        measurementValues: "1,2,3,4,5,6,7,9,10",
+        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940700000,1453941000000, 1453941300000, 1453941600000"
     };
 
     const aggregateMockReactiveEnergySensor2 = {
@@ -30,7 +32,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "reactiveEnergy",
         unitOfMeasurement: "kVArh",
-        measurementValues: "0.1,0.2,0.3,0.4"
+        measurementValues: "0.1,0.2,0.3,0.4",
+        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000"
     };
 
     const aggregateMockMaxPowerSensor2 = {
@@ -40,7 +43,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "maxPower",
         unitOfMeasurement: "VAr",
-        measurementValues: "0.6,0.7,0.8,0.9"
+        measurementValues: "0.6,0.7,0.8,0.9",
+        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000"
     };
 
     const aggregateMockActiveEnergySensor3 = {
@@ -50,7 +54,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "activeEnergy",
         unitOfMeasurement: "kWh",
-        measurementValues: "0.1,0.2,0.3"
+        measurementValues: "0.1",
+        measurementTimes: "1453939200000"
     };
 
     const aggregateMockReactiveEnergySensor3 = {
@@ -60,7 +65,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "reactiveEnergy",
         unitOfMeasurement: "kVArh",
-        measurementValues: "1,5,4,7,3,1,,0.1"
+        measurementValues: "1,5,4,7,3,1,0.1",
+        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940700000,1453941000000"
     };
 
     const aggregateMockMaxPowerSensor3 = {
@@ -70,7 +76,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         source: "reading",
         measurementType: "maxPower",
         unitOfMeasurement: "VAr",
-        measurementValues: ",,,3,6,5,,1"
+        measurementValues: "1,2,1,3,6,5,1",
+        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940700000,1453941000000"
     };
 
     const mockFormulas = {
@@ -80,21 +87,21 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     };
 
     const api = () => {
-        const lastSlashIndex = config.READINGS_API_ENDPOINT.lastIndexOf("/");
+        const lastSlashIndex = READINGS_API_ENDPOINT.lastIndexOf("/");
         return {
-            url: config.READINGS_API_ENDPOINT.substring(0, lastSlashIndex),
-            route: config.READINGS_API_ENDPOINT.substring(lastSlashIndex, config.READINGS_API_ENDPOINT.length)
+            url: READINGS_API_ENDPOINT.substring(0, lastSlashIndex),
+            route: READINGS_API_ENDPOINT.substring(lastSlashIndex, READINGS_API_ENDPOINT.length)
         };
     };
 
     before(async () => {
         db = await mongodb;
-        aggregates = db.collection(config.AGGREGATES_COLLECTION_NAME);
-        formulas = db.collection(config.FORMULAS_COLLECTION);
+        aggregates = db.collection(AGGREGATES_COLLECTION_NAME);
+        formulas = db.collection(FORMULAS_COLLECTION);
     });
     after(async () => {
-        await db.dropCollection(config.AGGREGATES_COLLECTION_NAME);
-        await db.dropCollection(config.FORMULAS_COLLECTION);
+        await db.dropCollection(AGGREGATES_COLLECTION_NAME);
+        await db.dropCollection(FORMULAS_COLLECTION);
         await db.close();
     });
     beforeEach(async () => {
@@ -110,7 +117,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with `activeEnergy` measurement", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:15:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -122,9 +129,9 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
             );
 
-            var myApi = nock(api().url)
+            const myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -132,7 +139,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with `activeEnergy`, `reactiveEnergy` and `maxPower` measurements", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:15:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -149,14 +156,14 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 }]
             };
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
+                getSensorWithSourceInMeasurements("2016-01-28T00:18:36.389Z", "reading")
             );
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -164,38 +171,38 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with 3 `measurementType` and 2 `formulas`", async () => {
             const expectedBody1 = {
                 sensorId: "site",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:05:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
-                    value: 4.808,
+                    value: 2.808,
                     unitOfMeasurement: "kWh"
                 }, {
                     type: "reactiveEnergy",
-                    value: 0.315,
+                    value: 0.115,
                     unitOfMeasurement: "kVArh"
                 }, {
                     type: "maxPower",
-                    value: 0.9,
+                    value: 0.7,
                     unitOfMeasurement: "VAr"
                 }]
             };
             const expectedBody2 = {
                 sensorId: "site2",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:05:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "reactiveEnergy",
-                    value: 7.315,
+                    value: 5.115,
                     unitOfMeasurement: "kVArh"
                 }, {
                     type: "maxPower",
-                    value: 3.9,
+                    value: 2.7,
                     unitOfMeasurement: "VAr"
                 }]
             };
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", "reading")
+                getSensorWithSourceInMeasurements("2016-01-28T00:08:36.389Z", "reading")
             );
             await aggregates.insert(aggregateMockReactiveEnergySensor2);
             await aggregates.insert(aggregateMockMaxPowerSensor2);
@@ -206,9 +213,9 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody1)
-                .reply(200, {result: "Ok"})
+                .reply(200, {result: "OK"})
                 .post(api().route, expectedBody2)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -220,7 +227,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:22:36.389Z",
+                date: "2016-01-28T00:20:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -234,7 +241,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -242,7 +249,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with the `measurementValues` at the right position as sum of `measurementValues` of sensors in `formula`", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:22:36.389Z",
+                date: "2016-01-28T00:20:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -271,7 +278,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -279,7 +286,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("with a correct virtual aggregate for every `measurementType`", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:17:00.389Z",
+                date: "2016-01-28T00:15:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -304,7 +311,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
@@ -312,7 +319,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         it("create a correct post for every and every `resultId` in `formulas`", async () => {
             const expectedBody1 = {
                 sensorId: "site",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:15:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -330,7 +337,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             };
             const expectedBody2 = {
                 sensorId: "site2",
-                date: "2016-01-28T00:16:36.389Z",
+                date: "2016-01-28T00:15:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "reactiveEnergy",
@@ -354,26 +361,27 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             var myApi = nock(api().url)
                 .post(api().route, expectedBody1)
-                .reply(200, {result: "Ok"})
+                .reply(200, {result: "OK"})
                 .post(api().route, expectedBody2)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
             await run(handler, event);
             myApi.done();
         });
 
         it("doesn't call API if the event source is `forecast`", async () => {
+            const expectedBody = {
+                sensorId: "site",
+                date: "2016-01-28T00:00:00.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 1.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            };
             var myApi = nock(api().url)
-                .post(api().route, {
-                    sensorId: "site",
-                    date: "2016-01-28T00:00:11.000Z",
-                    source: "reading",
-                    measurements: [{
-                        type: "activeEnergy",
-                        value: 1.808,
-                        unitOfMeasurement: "kWh"
-                    }]
-                })
-                .reply(200, {result: "Ok"});
+                .post(api().route, expectedBody)
+                .reply(200, {result: "OK"});
 
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "forecast")
@@ -388,10 +396,52 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expect(myApi.isDone()).to.equal(true);
         });
 
-        it("non-first day of the month [CASE: 1/2 (only testing different combinations)]", async () => {
+        it("create the virtual aggregates with custom `sampleDeltaMS`", async () => {
+            const expectedBody = {
+                sensorId: "site2",
+                date: "2016-01-28T00:04:00.000Z",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 2.808,
+                    unitOfMeasurement: "kWh"
+                }, {
+                    type: "reactiveEnergy",
+                    value: 0.115,
+                    unitOfMeasurement: "kVArh"
+                }, {
+                    type: "maxPower",
+                    value: 0.7,
+                    unitOfMeasurement: "VAr"
+                }]
+            };
+
+            const mockFormulasWithSampleDelta = {
+                resultId: "site2",
+                variables: ["sensor1", "sensor2"],
+                formulaString: "sensor1+sensor2",
+                sampleDeltaMS: moment.duration(2, "minutes").asMilliseconds()
+            };
+
+            await formulas.remove({});
+            await formulas.insert(mockFormulasWithSampleDelta);
+            await aggregates.insert(aggregateMockReactiveEnergySensor2);
+            await aggregates.insert(aggregateMockMaxPowerSensor2);
+
+            const myApi = nock(api().url)
+                .post(api().route, expectedBody)
+                .reply(200, {result: "OK"});
+            const event = getEventFromObject(
+                getSensorWithSourceInMeasurements("2016-01-28T00:05:11.000Z", "reading")
+            );
+            await run(handler, event);
+            myApi.done();
+        });
+
+        it("testing different combinations [CASE: 1/2]", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:00:11.000Z",
+                date: "2016-01-28T00:00:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
@@ -399,10 +449,9 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     unitOfMeasurement: "kWh"
                 }]
             };
-
             const myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
 
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:00:11.000Z", "reading")
@@ -411,24 +460,24 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             myApi.done();
         });
 
-        it("non-first day of the month [CASE: 2/2 (only testing different combinations)]", async () => {
+        it("testing different combinations [CASE: 2/2]", async () => {
             const expectedBody = {
                 sensorId: "site",
-                date: "2016-01-28T00:23:51.000Z",
+                date: "2016-01-28T00:35:00.000Z",
                 source: "reading",
                 measurements: [{
                     type: "activeEnergy",
-                    value: 5.808,
+                    value: 9.808,
                     unitOfMeasurement: "kWh"
                 }]
             };
 
             const myApi = nock(api().url)
                 .post(api().route, expectedBody)
-                .reply(200, {result: "Ok"});
+                .reply(200, {result: "OK"});
 
             const event = getEventFromObject(
-                getSensorWithSourceInMeasurements("2016-01-28T00:23:51.000Z", "reading")
+                getSensorWithSourceInMeasurements("2016-01-28T00:37:51.000Z", "reading")
             );
             await run(handler, event);
             myApi.done();

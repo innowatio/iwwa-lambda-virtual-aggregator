@@ -1,15 +1,15 @@
-function parseMeasurementValues (measurementValues) {
-    return measurementValues !== null ? (
-        measurementValues
+function parseMeasurement (measurement, parseFunc) {
+    return measurement !== null ? (
+        measurement
             .split(",")
-            .map(value => parseFloat(value))
-            .map(value => isNaN(value) ? null : value)
+            .map(value => parseFunc(value))
     ) : [];
 }
 
 export default function parseAggregate (aggregate) {
     return {
         ...aggregate,
-        measurementValues: parseMeasurementValues(aggregate.measurementValues)
+        measurementValues: parseMeasurement(aggregate.measurementValues, parseFloat),
+        measurementTimes: parseMeasurement(aggregate.measurementTimes, parseInt)
     };
 }

@@ -1,13 +1,14 @@
 import assert from "assert";
-import {contains, is, isNil, path} from "ramda";
+import {contains, is, isNil} from "ramda";
+import get from "lodash.get";
 
-import * as config from "../config";
+import {ALLOWED_ENERGY_TYPES} from "../config";
 
 function getReadingSource (reading) {
     const source = (
         reading.source ?
         reading.source :
-        path(["measurements", "0", "source"], reading)
+        get(reading, "measurements.0.source")
     );
     assert(is(String, source), "Reading has no source");
     return source;
@@ -15,7 +16,7 @@ function getReadingSource (reading) {
 export default function spreadReadingByMeasurementType (reading) {
     const source = getReadingSource(reading);
     return reading.measurements.map(measurement => {
-        return contains(measurement.type, config.ALLOWED_ENERGY_TYPES) ? {
+        return contains(measurement.type, ALLOWED_ENERGY_TYPES) ? {
             sensorId: reading.sensorId,
             date: reading.date,
             source,

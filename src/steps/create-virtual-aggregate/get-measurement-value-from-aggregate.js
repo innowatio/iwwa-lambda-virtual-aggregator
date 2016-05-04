@@ -1,19 +1,21 @@
 import moment from "moment";
+import inRange from "lodash.inrange";
 
-import {MEASUREMENTS_DELTA_IN_MS} from "../../config";
-
-function convertReadingDate (dateString) {
-    const dateInMs = moment.utc(dateString, moment.ISO_8601, true).valueOf();
-    return dateInMs - (dateInMs % MEASUREMENTS_DELTA_IN_MS);
+function getMeasurementIndex (parsedAggregate, date, sampleDeltaMS) {
+    const readingDate = moment(date).valueOf();
+    return parsedAggregate.measurementTimes.findIndex(measurementTime => {
+        return inRange(
+            measurementTime,
+            readingDate,
+            moment(readingDate).add(sampleDeltaMS, "ms").valueOf()
+        );
+    });
 }
 
-function getOffset (readingDate) {
-    const date = convertReadingDate(readingDate);
-    const startOfDay = moment.utc(date).startOf("day").valueOf();
-    return (date - startOfDay) / MEASUREMENTS_DELTA_IN_MS;
-}
-
-export default function getMeasurementValueFromAggregate (parsedAggregate, date) {
-    const offset = getOffset(date);
-    return parsedAggregate.measurementValues[offset];
+export default function getMeasurementValueFromAggregate (parsedAggregate, date, sampleDeltaMS) {
+    const measurementIndex = getMeasurementIndex(parsedAggregate, date, sampleDeltaMS);
+    if (measurementIndex >= 0) {
+        return parsedAggregate.measurementValues[measurementIndex];
+    }
+    return null;
 }

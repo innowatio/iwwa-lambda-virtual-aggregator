@@ -5,18 +5,18 @@ import getAggregate from "./get-aggregate";
 import parseAggregate from "../parse-aggregate";
 import getMeasurementValueFromAggregate from "./get-measurement-value-from-aggregate";
 
-function filterFormula (sensorId, variable) {
-    return variable !== sensorId;
+function filterFormula (readingSensorId, variable) {
+    return variable !== readingSensorId;
 }
 // Get the sensors in the `variables` in the formula, filtered by the sensor of the given event.
-function getSensorInFormula (sensorId, variables) {
+function getSensorInFormula (readingSensorId, variables) {
     return filter(
-        partial(filterFormula, [sensorId]),
+        partial(filterFormula, [readingSensorId]),
         variables
     );
 }
-export default async function getValueFromSensorsInFormula (sensorId, variables, virtualAggregate) {
-    const sensors = getSensorInFormula(sensorId, variables);
+export default async function getValueFromSensorsInFormula (readingSensorId, variables, virtualAggregate, sampleDeltaMS) {
+    const sensors = getSensorInFormula(readingSensorId, variables);
     const measurementType = virtualAggregate.measurementType;
     const source = virtualAggregate.source;
     const date = virtualAggregate.date;
@@ -26,10 +26,11 @@ export default async function getValueFromSensorsInFormula (sensorId, variables,
             return null;
         }
         const parsedAggregate = parseAggregate(aggregate);
-        const measurementValuesFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date);
+        // Get the delta between the point of measurements, that it will be the range of time where I get the values to use in formula.
+        const measurementValueFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaMS);
         return {
             ...acc,
-            [sensorId]: measurementValuesFromAggregate
+            [sensorId]: measurementValueFromAggregate
         };
     }, {});
 }

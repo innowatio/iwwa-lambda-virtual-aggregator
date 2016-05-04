@@ -1,12 +1,20 @@
 import {map, reduce} from "bluebird";
 import {filter, isNil, partial} from "ramda";
+import moment from "moment";
 
 import getValueFromSensorsInFormula from "./get-value-from-sensors-in-formula";
+import {DEFAULT_SAMPLE_DELTA_IN_MS} from "../../config.js";
 
-function getDefaultVirtualAggregate (reading, formula) {
+function convertReadingDate (dateString, measurementDelta) {
+    const dateInMs = moment.utc(dateString, moment.ISO_8601, true).valueOf();
+    return dateInMs - (dateInMs % measurementDelta);
+}
+
+function getDefaultVirtualAggregate (reading, formula, sampleDeltaMS) {
+    const date = convertReadingDate(reading.date, sampleDeltaMS);
     return {
         sensorId: formula.resultId,
-        date: reading.date,
+        date: moment(date).toISOString(),
         source: reading.source,
         measurementType: reading.measurementType,
         formula: formula.formulaString,
@@ -17,11 +25,13 @@ function getDefaultVirtualAggregate (reading, formula) {
     };
 }
 async function getVirtualAggregate (reading, formula) {
-    const defaultVirtualAggregate = getDefaultVirtualAggregate(reading, formula);
+    const sampleDeltaMS = formula.sampleDeltaMS || DEFAULT_SAMPLE_DELTA_IN_MS;
+    const defaultVirtualAggregate = getDefaultVirtualAggregate(reading, formula, sampleDeltaMS);
     const valueFromAggregateInFormula = await getValueFromSensorsInFormula(
         reading.sensorId,
         formula.variables,
-        defaultVirtualAggregate
+        defaultVirtualAggregate,
+        sampleDeltaMS
     );
     if (!valueFromAggregateInFormula) {
         return null;
@@ -42,7 +52,7 @@ export default async function createVirtualAggregate (readings, formulas) {
         const virtualAggregates = await map(formulas, partial(getVirtualAggregate, [reading]));
         return acc.concat(
             /*
-            *   Filter the null in the array. It's possible to have null if a
+            *   Filter the null or undefined in the array. It's possible to have null if a
             *   collection is not found.
             */
             filter(filterNullInArray, virtualAggregates)

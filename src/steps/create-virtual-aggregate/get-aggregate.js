@@ -17,5 +17,5 @@ export default async function getAggregate (sensorId, measurementType, source, d
     const query = {
         _id: getAggregateId({sensorId, measurementType, source, date})
     };
-    return await db.collection(AGGREGATES_COLLECTION_NAME).findOne(query);
+    return db.collection(AGGREGATES_COLLECTION_NAME).findOne(query);
 }
