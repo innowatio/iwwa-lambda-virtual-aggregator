@@ -15,7 +15,7 @@ function getSensorInFormula (readingSensorId, variables) {
         variables
     );
 }
-export default async function getValueFromSensorsInFormula (readingSensorId, variables, virtualAggregate, sampleDeltaMS) {
+export default async function getValueFromSensorsInFormula (readingSensorId, variables, virtualAggregate, sampleDeltaInMS) {
     const sensors = getSensorInFormula(readingSensorId, variables);
     const measurementType = virtualAggregate.measurementType;
     const source = virtualAggregate.source;
@@ -27,7 +27,7 @@ export default async function getValueFromSensorsInFormula (readingSensorId, var
         }
         const parsedAggregate = parseAggregate(aggregate);
         // Get the delta between the point of measurements, that it will be the range of time where I get the values to use in formula.
-        const measurementValueFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaMS);
+        const measurementValueFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS);
         return {
             ...acc,
             [sensorId]: measurementValueFromAggregate

@@ -44,15 +44,15 @@ describe("`getMeasurementValueFromAggregate` function", () => {
 
     it("return the correct data if it's present in selected range of time", () => {
         const date = "2016-01-28T00:10:00.000Z";
-        const sampleDeltaMS = moment.duration(5, "minutes").asMilliseconds();
-        const ret = getMeasurementValueFromAggregate(parsedAggregate2, date, sampleDeltaMS);
+        const sampleDeltaInMS = moment.duration(5, "minutes").asMilliseconds();
+        const ret = getMeasurementValueFromAggregate(parsedAggregate2, date, sampleDeltaInMS);
         expect(ret).to.equal(0.3);
     });
 
     it("return `null` if there isn't at least one values in the specified range", () => {
         const date = "2016-01-28T00:10:00.000Z";
-        const sampleDeltaMS = moment.duration(1, "minutes").asMilliseconds();
-        const ret = getMeasurementValueFromAggregate(parsedAggregate1, date, sampleDeltaMS);
+        const sampleDeltaInMS = moment.duration(1, "minutes").asMilliseconds();
+        const ret = getMeasurementValueFromAggregate(parsedAggregate1, date, sampleDeltaInMS);
         expect(ret).to.equal(null);
     });
 

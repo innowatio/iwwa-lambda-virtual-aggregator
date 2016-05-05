@@ -10,8 +10,8 @@ function convertReadingDate (dateString, measurementDelta) {
     return dateInMs - (dateInMs % measurementDelta);
 }
 
-function getDefaultVirtualAggregate (reading, formula, sampleDeltaMS) {
-    const date = convertReadingDate(reading.date, sampleDeltaMS);
+function getDefaultVirtualAggregate (reading, formula, sampleDeltaInMS) {
+    const date = convertReadingDate(reading.date, sampleDeltaInMS);
     return {
         sensorId: formula.resultId,
         date: moment(date).toISOString(),
@@ -25,13 +25,13 @@ function getDefaultVirtualAggregate (reading, formula, sampleDeltaMS) {
     };
 }
 async function getVirtualAggregate (reading, formula) {
-    const sampleDeltaMS = formula.sampleDeltaMS || DEFAULT_SAMPLE_DELTA_IN_MS;
-    const defaultVirtualAggregate = getDefaultVirtualAggregate(reading, formula, sampleDeltaMS);
+    const sampleDeltaInMS = formula.sampleDeltaInMS || DEFAULT_SAMPLE_DELTA_IN_MS;
+    const defaultVirtualAggregate = getDefaultVirtualAggregate(reading, formula, sampleDeltaInMS);
     const valueFromAggregateInFormula = await getValueFromSensorsInFormula(
         reading.sensorId,
         formula.variables,
         defaultVirtualAggregate,
-        sampleDeltaMS
+        sampleDeltaInMS
     );
     if (!valueFromAggregateInFormula) {
         return null;

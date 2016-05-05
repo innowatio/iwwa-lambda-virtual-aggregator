@@ -396,7 +396,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expect(myApi.isDone()).to.equal(true);
         });
 
-        it("create the virtual aggregates with custom `sampleDeltaMS`", async () => {
+        it("create the virtual aggregates with custom `sampleDeltaInMS`", async () => {
             const expectedBody = {
                 sensorId: "site2",
                 date: "2016-01-28T00:04:00.000Z",
@@ -420,7 +420,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 resultId: "site2",
                 variables: ["sensor1", "sensor2"],
                 formulaString: "sensor1+sensor2",
-                sampleDeltaMS: moment.duration(2, "minutes").asMilliseconds()
+                sampleDeltaInMS: moment.duration(2, "minutes").asMilliseconds()
             };
 
             await formulas.remove({});
