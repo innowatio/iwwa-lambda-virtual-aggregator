@@ -27,15 +27,13 @@ function checkNotValid (value) {
 
 export default async function postSensorEvent (aggregates) {
     const body = createBody(aggregates);
-    console.log("BODY");
-    console.log(body);
-    log.info(body, "body of the post");
+    log.info(body, `body of the post at: ${READINGS_API_ENDPOINT}`);
     if (body.measurements) {
         try {
             await axios.post(READINGS_API_ENDPOINT, body);
         } catch (e) {
-            console.log("ERROR POST");
-            console.log(e);
+            log.info(e, "error while performing post");
+            throw new Error(e);
         }
     }
 }
