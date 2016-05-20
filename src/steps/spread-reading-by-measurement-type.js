@@ -1,8 +1,6 @@
 import assert from "assert";
-import {contains, is, isNil} from "ramda";
+import {is, isNil} from "ramda";
 import get from "lodash.get";
-
-import {ALLOWED_ENERGY_TYPES} from "../config";
 
 function getReadingSource (reading) {
     const source = (
@@ -16,13 +14,13 @@ function getReadingSource (reading) {
 export default function spreadReadingByMeasurementType (reading) {
     const source = getReadingSource(reading);
     return reading.measurements.map(measurement => {
-        return contains(measurement.type, ALLOWED_ENERGY_TYPES) ? {
+        return {
             sensorId: reading.sensorId,
             date: reading.date,
             source,
             measurementType: measurement.type,
             measurementValue: measurement.value,
             unitOfMeasurement: measurement.unitOfMeasurement
-        } : null;
+        };
     }).filter(reading => !isNil(reading));
 }

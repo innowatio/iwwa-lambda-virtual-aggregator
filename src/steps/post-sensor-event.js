@@ -1,8 +1,10 @@
 import axios from "axios";
-import {isNil} from "ramda";
-import {READINGS_API_ENDPOINT} from "../config";
+import {isNil, splitEvery} from "ramda";
+import {map} from "bluebird";
 
 import log from "../services/logger";
+import * as kinesis from "../services/kinesis";
+import {KINESIS_STREAM_NAME, READINGS_API_ENDPOINT} from "config";
 
 function createBody (aggregates) {
     return {
@@ -25,7 +27,7 @@ function checkNotValid (value) {
     return !isNil(value);
 }
 
-export default async function postSensorEvent (aggregates) {
+export async function postSensorEvent (aggregates) {
     const body = createBody(aggregates);
     log.info(body, `body of the post at: ${READINGS_API_ENDPOINT}`);
     if (body.measurements) {
@@ -36,4 +38,21 @@ export default async function postSensorEvent (aggregates) {
             throw new Error(e);
         }
     }
+}
+
+function _putRecords (events) {
+    const records = events.map(event => ({
+        Data: JSON.stringify(event),
+        PartitionKey: event.data.element.sensorId
+    }));
+    log.debug({records}, "Putting Kinesis records");
+    return kinesis.putRecords({
+        Records: records,
+        StreamName: KINESIS_STREAM_NAME
+    });
+}
+
+export async function putRecords (virtualMeasurements) {
+    const batches = splitEvery(250, virtualMeasurements);
+    return map(batches, _putRecords, {concurrency: 1});
 }

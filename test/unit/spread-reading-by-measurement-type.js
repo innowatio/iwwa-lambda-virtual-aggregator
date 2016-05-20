@@ -17,6 +17,13 @@ describe("filterAllowedMeasurements", () => {
         }, {
             sensorId: "sensor1",
             date: "2016-01-28T00:16:36.389Z",
+            measurementType: "temperature",
+            measurementValue: "2.2",
+            unitOfMeasurement: "kWh",
+            source: "reading"
+        }, {
+            sensorId: "sensor1",
+            date: "2016-01-28T00:16:36.389Z",
             measurementType: "maxPower",
             measurementValue: "3.3",
             unitOfMeasurement: "kWh",
@@ -24,7 +31,7 @@ describe("filterAllowedMeasurements", () => {
         }];
         var reading = getReadingWithMultipleMeasurements();
         const result = spreadReadingByMeasurementType(reading);
-        expect(result.length).to.be.equals(2);
+        expect(result.length).to.be.equals(3);
         expect(result).to.deep.equals(measure);
     });
 });

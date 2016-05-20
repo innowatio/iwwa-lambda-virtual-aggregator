@@ -8,12 +8,14 @@
     "url": "https://github.com/innowatio/iwwa-lambda-virtual-aggregator"
   },
   "dependencies": {
+    "aws-sdk": "^2.3.14",
     "axios": "^0.11.0",
     "babel-polyfill": "^6.8.0",
     "bluebird": "^3.3.5",
     "bunyan": "^1.8.1",
     "dotenv": "^2.0.0",
     "kinesis-router": "^1.2.1",
+    "lk-collection": "^3.2.1",
     "lodash.get": "^4.2.1",
     "lodash.inrange": "^3.3.4",
     "lodash.sum": "^4.0.2",
@@ -32,7 +34,8 @@
     "eslint": "^2.9.0",
     "isparta": "^4.0.0",
     "mocha": "^2.4.5",
-    "nock": "^8.0.0"
+    "nock": "^8.0.0",
+    "sinon": "^1.17.4"
   },
   "scripts": {
     "build": "babel src -d bundle",
