@@ -1,5 +1,5 @@
 import axios from "axios";
-import {isNil, splitEvery} from "ramda";
+import {groupBy, isEmpty, isNil, values} from "ramda";
 import {map} from "bluebird";
 
 import log from "../services/logger";
@@ -40,19 +40,25 @@ export async function postSensorEvent (aggregates) {
     }
 }
 
-function _putRecords (events) {
-    const records = events.map(event => ({
-        Data: JSON.stringify(event),
-        PartitionKey: event.data.element.sensorId
-    }));
-    log.debug({records}, "Putting Kinesis records");
-    return kinesis.putRecords({
-        Records: records,
-        StreamName: KINESIS_STREAM_NAME
-    });
+function _putRecords (virtualMeasurements) {
+    const body = createBody(virtualMeasurements);
+    if (body.measurements && !isEmpty(body.measurements)) {
+        const records = [{
+            Data: JSON.stringify(body),
+            PartitionKey: body.sensorId
+        }];
+        log.debug({records}, "Putting Kinesis records");
+        return kinesis.putRecords({
+            Records: records,
+            StreamName: KINESIS_STREAM_NAME
+        });
+    }
 }
 
-export async function putRecords (virtualMeasurements) {
-    const batches = splitEvery(250, virtualMeasurements);
-    return map(batches, _putRecords, {concurrency: 1});
+export function putRecords (virtualMeasurements) {
+    return map(
+        values(groupBy((measurement) => measurement.sensorId, virtualMeasurements)),
+        _putRecords,
+        {concurrency: 1}
+    );
 }

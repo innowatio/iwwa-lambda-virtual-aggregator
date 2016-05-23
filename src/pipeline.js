@@ -6,7 +6,7 @@ import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
 import spreadReadingByMeasurementType from "./steps/spread-reading-by-measurement-type";
 import createVirtualAggregate from "./steps/create-virtual-aggregate/";
 import resolveFormulas from "./steps/resolve-formulas";
-import {putRecords} from "./steps/post-sensor-event";
+import {putRecords} from "./steps/put-in-kinesis";
 
 export default async function pipeline (event) {
     log.info(event, "event");
