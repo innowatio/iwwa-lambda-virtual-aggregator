@@ -2,12 +2,11 @@ import chai, {expect} from "chai";
 import moment from "moment";
 import {spy} from "sinon";
 import sinonChai from "sinon-chai";
-import nock from "nock";
 
 chai.use(sinonChai);
 
 import mongodb from "services/mongodb";
-import {READINGS_API_ENDPOINT, AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION, SENSOR_INSERT} from "config";
+import {AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION, SENSOR_INSERT} from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
@@ -98,14 +97,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
         resultId: "site2",
         variables: ["sensor1", "sensor2", "sensor3"],
         formula: "sensor1+sensor2+sensor3"
-    };
-
-    const api = () => {
-        const lastSlashIndex = READINGS_API_ENDPOINT.lastIndexOf("/");
-        return {
-            url: READINGS_API_ENDPOINT.substring(0, lastSlashIndex),
-            route: READINGS_API_ENDPOINT.substring(lastSlashIndex, READINGS_API_ENDPOINT.length)
-        };
     };
 
     before(async () => {

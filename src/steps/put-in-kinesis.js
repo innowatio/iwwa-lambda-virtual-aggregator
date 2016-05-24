@@ -1,9 +1,8 @@
 import {groupBy, isNil, partial} from "ramda";
 import {map} from "bluebird";
 
-import log from "../services/logger";
 import dispatchEvent from "services/dispatcher";
-import {READINGS_API_ENDPOINT, SENSOR_INSERT} from "config";
+import {SENSOR_INSERT} from "config";
 
 function createEvent (aggregates) {
     return {
