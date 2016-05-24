@@ -1,7 +1,8 @@
 import "babel-polyfill";
 import router from "kinesis-router";
+import {SENSOR_INSERT} from "config";
 
 import pipeline from "./pipeline";
 
 export const handler = router()
-    .on("element inserted in collection readings", pipeline);
+    .on(SENSOR_INSERT, pipeline);

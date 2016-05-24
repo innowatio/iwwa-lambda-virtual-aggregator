@@ -4,6 +4,7 @@ import sinonChai from "sinon-chai";
 
 chai.use(sinonChai);
 
+import {SENSOR_INSERT} from "config";
 import {putRecords, __RewireAPI__ as putRecordsRewire} from "steps/put-in-kinesis";
 
 describe("`put-in-kinesis`", () => {
@@ -12,13 +13,11 @@ describe("`put-in-kinesis`", () => {
 
     beforeEach(() => {
         mockPutRecords = spy();
-        putRecordsRewire.__Rewire__("kinesis", {
-            putRecords: mockPutRecords
-        });
+        putRecordsRewire.__Rewire__("dispatchEvent", mockPutRecords);
     });
 
     afterEach(() => {
-        putRecordsRewire.__ResetDependency__("kinesis");
+        putRecordsRewire.__ResetDependency__("dispatchEvent");
     });
 
     describe("should properly parse a list of aggregated elements", () => {
@@ -51,25 +50,23 @@ describe("`put-in-kinesis`", () => {
             }];
 
             const expectedStreamObject = {
-                Records: [{
-                    Data: JSON.stringify({
-                        sensorId: "site1",
-                        date: "2016-01-28T00:11:00.123",
-                        source: "reading",
-                        measurements: [{
-                            type: "reactiveEnergy",
-                            value: 6.444,
-                            unitOfMeasurement: "kVArh"
-                        }]
-                    }),
-                    PartitionKey: "site1"
-                }],
-                StreamName: "test"
+                element: {
+                    sensorId: "site1",
+                    date: "2016-01-28T00:11:00.123",
+                    source: "reading",
+                    measurements: [{
+                        type: "reactiveEnergy",
+                        value: 6.444,
+                        unitOfMeasurement: "kVArh"
+                    }]
+                }
             };
 
             await putRecords(aggregates);
             expect(mockPutRecords.callCount).to.equal(1);
-            expect(mockPutRecords).to.have.been.calledWith(expectedStreamObject);
+            expect(mockPutRecords).to.have.been.calledWith(
+                SENSOR_INSERT,
+                expectedStreamObject);
         });
 
         it("should not POST if there are no valid results", async () => {
@@ -84,7 +81,7 @@ describe("`put-in-kinesis`", () => {
                     sensor1: 0.808,
                     sensor2: 4
                 },
-                result: "test"
+                result: undefined
             }, {
                 sensorId: "site1",
                 date: "2016-01-28T00:16:36.389Z",
@@ -96,11 +93,11 @@ describe("`put-in-kinesis`", () => {
                     sensor1: 2,
                     sensor2: 4.444
                 },
-                result: "test"
+                result: undefined
             }];
 
             await putRecords(aggregates);
-            expect(mockPutRecords.callCount).to.equal(0);
+            expect(0).to.equal(mockPutRecords.callCount);
         });
     });
 
@@ -131,45 +128,43 @@ describe("`put-in-kinesis`", () => {
             result: 6.444
         }];
 
-        const expectedStreamObject = [{
-            Records: [{
-                Data: JSON.stringify({
-                    sensorId: "site2",
-                    date: "2016-01-28T00:11:00.000",
-                    source: "reading",
-                    measurements: [{
-                        type: "activeEnergy",
-                        value: 4.808,
-                        unitOfMeasurement: "kWh"
-                    }]
-                }),
-                PartitionKey: "site2"
-            }],
-            StreamName: "test"
-        }, {
-            Records: [{
-                Data: JSON.stringify({
-                    sensorId: "site1",
-                    date: "2016-01-28T00:11:00.123",
-                    source: "reading",
-                    measurements: [{
-                        type: "reactiveEnergy",
-                        value: 6.444,
-                        unitOfMeasurement: "kVArh"
-                    }]
-                }),
-                PartitionKey: "site1"
-            }],
-            StreamName: "test"
-        }];
+        const expectedStreamObject1 = {
+            element: {
+                sensorId: "site2",
+                date: "2016-01-28T00:11:00.000",
+                source: "reading",
+                measurements: [{
+                    type: "activeEnergy",
+                    value: 4.808,
+                    unitOfMeasurement: "kWh"
+                }]
+            }
+        };
+        const expectedStreamObject2 = {
+            element: {
+                sensorId: "site1",
+                date: "2016-01-28T00:11:00.123",
+                source: "reading",
+                measurements: [{
+                    type: "reactiveEnergy",
+                    value: 6.444,
+                    unitOfMeasurement: "kVArh"
+                }]
+            }
+        };
 
         await putRecords(aggregates);
         expect(mockPutRecords.callCount).to.equal(2);
-        expect(mockPutRecords.args[0][0]).to.deep.equals(expectedStreamObject[0]);
-        expect(mockPutRecords.args[1][0]).to.deep.equals(expectedStreamObject[1]);
-
-        // TODO capire perchè non va con tutto expectedStreamObject
-        expect(mockPutRecords).to.have.been.calledWith(expectedStreamObject[0]);
+        expect(mockPutRecords.args[0][0]).to.deep.equals(SENSOR_INSERT);
+        expect(mockPutRecords.args[1][0]).to.deep.equals(SENSOR_INSERT);
+        expect(mockPutRecords.args[0][1]).to.deep.equals(expectedStreamObject1);
+        expect(mockPutRecords.args[1][1]).to.deep.equals(expectedStreamObject2);
+        // doesn't work
+        // expect(mockPutRecords).to.have.been.calledWith(
+        //     SENSOR_INSERT,
+        //     expectedStreamObject1,
+        //     SENSOR_INSERT,
+        //     expectedStreamObject2);
     });
 
 });

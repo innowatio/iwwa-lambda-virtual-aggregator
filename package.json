@@ -15,7 +15,7 @@
     "bunyan": "^1.8.1",
     "dotenv": "^2.0.0",
     "kinesis-router": "^1.2.1",
-    "lk-collection": "^3.2.1",
+    "lk-dispatch": "^1.1.0",
     "lodash.get": "^4.2.1",
     "lodash.inrange": "^3.3.4",
     "lodash.sum": "^4.0.2",
