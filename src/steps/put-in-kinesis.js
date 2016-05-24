@@ -37,7 +37,6 @@ export function putRecords (virtualMeasurements) {
             )
         ).map((measurements) => {
             const newEvent = createEvent(measurements);
-            log.info(measurements, `body of the post at: ${READINGS_API_ENDPOINT}`);
             return newEvent;
         }),
         partial(dispatchEvent, [SENSOR_INSERT]),
