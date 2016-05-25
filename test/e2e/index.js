@@ -327,7 +327,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expectCalledOnceWith(expectedBody);
         });
 
-        it("create a correct post for every and every `resultId` in `formulas`", async () => {
+        it("calls kinesis putRecords with the correct data", async () => {
             const expectedBody1 = {
                 element: {
                     sensorId: "site",
@@ -382,7 +382,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expect(mockPutRecords.args[1][1]).to.deep.equals(expectedBody2);
         });
 
-        it("doesn't call API if the event source is `forecast`", async () => {
+        it("doesn't put on kinesis if the event source is `forecast`", async () => {
             const expectedBody = {
                 element: {
                     sensorId: "site",
@@ -409,7 +409,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             expectCalledOnceWith(expectedBody);
         });
 
-        it("create the virtual aggregates with custom `sampleDeltaInMS`", async () => {
+        it("calls kinesis putRecords for virtual aggregates with custom `sampleDeltaInMS`", async () => {
             const expectedBody = {
                 element: {
                     sensorId: "site2",

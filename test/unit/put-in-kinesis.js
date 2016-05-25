@@ -22,7 +22,7 @@ describe("`put-in-kinesis`", () => {
 
     describe("should properly parse a list of aggregated elements", () => {
 
-        it("should POST only the valid results", async () => {
+        it("should call kinesis putRecords with only the valid results", async () => {
             const aggregates = [{
                 sensorId: "site1",
                 date: "2016-01-28T00:11:00.123",
@@ -69,7 +69,7 @@ describe("`put-in-kinesis`", () => {
                 expectedStreamObject);
         });
 
-        it("should not POST if there are no valid results", async () => {
+        it("should not call kinesis putRecords if there are no valid results", async () => {
             const aggregates = [{
                 sensorId: "site1",
                 date: "2016-01-28T00:16:36.389Z",
@@ -101,7 +101,7 @@ describe("`put-in-kinesis`", () => {
         });
     });
 
-    it("should POST only the valid results [multiple sensorId]", async () => {
+    it("should call kinesis putRecords only the valid results [multiple sensorId]", async () => {
         const aggregates = [{
             sensorId: "site2",
             date: "2016-01-28T00:11:00.000",
