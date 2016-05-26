@@ -19,6 +19,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     var aggregates;
     var formulas;
     var db;
+
     function expectCalledOnceWith (expectedBody) {
         expect(mockPutRecords.callCount).equals(1);
         expect(mockPutRecords).have.been.calledWith(
@@ -94,9 +95,19 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     };
 
     const mockFormulas = {
-        resultId: "site2",
+        _id: "site2",
         variables: ["sensor1", "sensor2", "sensor3"],
-        formula: "sensor1+sensor2+sensor3"
+        measurementType: ["activeEnergy", "temperature", "maxPower", "reactiveEnergy"],
+        formulas: [
+            {
+                formula: "sensor1+sensor2+sensor3",
+                measurementType: ["activeEnergy", "maxPower", "temperature", "reactiveEnergy"],
+                variables: ["sensor1", "sensor2", "sensor3"],
+                sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                start: "1900-01-01T00:00:00.000Z",
+                end: "2100-01-01T00:00:00.000Z"
+            }
+        ]
     };
 
     before(async () => {
@@ -169,6 +180,33 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     }]
                 }
             };
+            const formula = {
+                variables: ["sensor1", "sensor2"],
+                measurementType: [
+                    "activeEnergy",
+                    "temperature",
+                    "maxPower"
+                ],
+                formulas: [
+                    {
+                        formula: "sensor1+sensor2",
+                        measurementType: ["activeEnergy", "maxPower", "reactiveEnergy"],
+                        variables: ["sensor1", "sensor2"],
+                        sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                        start: "1900-01-01T00:00:00.000Z",
+                        end: "2100-01-01T00:00:00.000Z"
+                    },
+                    {
+                        formula: "sensor1+sensor2",
+                        measurementType: ["temperature"],
+                        variables: ["sensor1", "sensor2"],
+                        sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                        start: "1900-01-01T00:00:00.000Z",
+                        end: "2100-01-01T00:00:00.000Z"
+                    }
+                ]
+            };
+            formulas.update({_id: "site"}, formula);
             const event = getEventFromObject(
                 getSensorWithSourceInMeasurements("2016-01-28T00:18:36.389Z", "reading")
             );
@@ -189,10 +227,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         type: "activeEnergy",
                         value: 2.808,
                         unitOfMeasurement: "kWh"
-                    }, {
-                        type: "reactiveEnergy",
-                        value: 0.115,
-                        unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
                         value: 0.7,
@@ -270,10 +304,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         value: 0.808,
                         unitOfMeasurement: "kWh"
                     }, {
-                        type: "reactiveEnergy",
-                        value: -0.085,
-                        unitOfMeasurement: "kVArh"
-                    }, {
                         type: "maxPower",
                         value: 0,
                         unitOfMeasurement: "VAr"
@@ -286,9 +316,23 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             );
             await formulas.remove({});
             await formulas.insert({
-                resultId: "site",
+                _id: "site",
                 variables: ["sensor1"],
-                formulaString: "sensor1"
+                measurementType: [
+                    "activeEnergy",
+                    "temperature",
+                    "maxPower"
+                ],
+                formulas: [
+                    {
+                        formula: "sensor1",
+                        variables: ["sensor1"],
+                        measurementType: ["activeEnergy", "maxPower", "temperature"],
+                        sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                        start: "1900-01-01T00:00:00.000Z",
+                        end: "2100-01-01T00:00:00.000Z"
+                    }
+                ]
             });
 
             await run(handler, event);
@@ -305,10 +349,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         type: "activeEnergy",
                         value: 4.808,
                         unitOfMeasurement: "kWh"
-                    }, {
-                        type: "reactiveEnergy",
-                        value: 0.315,
-                        unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
                         value: 0.9,
@@ -337,10 +377,6 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         type: "activeEnergy",
                         value: 4.808,
                         unitOfMeasurement: "kWh"
-                    }, {
-                        type: "reactiveEnergy",
-                        value: 0.315,
-                        unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
                         value: 0.9,
@@ -432,10 +468,31 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             };
 
             const mockFormulasWithSampleDelta = {
-                resultId: "site2",
-                variables: ["sensor1", "sensor2"],
-                formulaString: "sensor1+sensor2",
-                sampleDeltaInMS: moment.duration(2, "minutes").asMilliseconds()
+                _id: "site2",
+                variables: ["sensor1", "sensor2", "sensor3"],
+                measurementType: [
+                    "activeEnergy",
+                    "temperature",
+                    "maxPower",
+                    "reactiveEnergy"
+                ],
+                formulas: [
+                    {
+                        formula: "sensor1+sensor2+sensor3",
+                        measurementType: ["activeEnergy", "maxPower", "temperature", "reactiveEnergy"],
+                        variables: ["sensor1", "sensor2", "sensor3"],
+                        sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                        start: "1900-01-01T00:00:00.000Z",
+                        end: "2016-01-01T00:00:00.000Z"
+                    }, {
+                        formula: "sensor1+sensor2",
+                        measurementType: ["activeEnergy", "maxPower", "temperature", "reactiveEnergy"],
+                        variables: ["sensor1", "sensor2"],
+                        sampleDeltaInMS: moment.duration(2, "minutes").asMilliseconds(),
+                        start: "2016-01-01T00:00:00.000Z",
+                        end: "2100-01-01T00:00:00.000Z"
+                    }
+                ]
             };
 
             await formulas.remove({});

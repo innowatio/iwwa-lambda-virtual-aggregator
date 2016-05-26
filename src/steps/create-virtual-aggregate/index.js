@@ -10,14 +10,24 @@ function convertReadingDate (dateString, measurementDelta) {
     return dateInMs - (dateInMs % measurementDelta);
 }
 
+function getCorrectFormula (formula, measurementType, measurementDate) {
+    const measurmentTime = new Date(measurementDate).getTime();
+    return (formula.formulas || []).find(
+        (stageFormula) => {
+            const startTime = new Date(stageFormula.start).getTime();
+            const endTime = new Date(stageFormula.end).getTime();
+            return stageFormula.measurementType.includes(measurementType) && startTime <= measurmentTime && measurmentTime < endTime;
+        });
+}
+
 function getDefaultVirtualAggregate (reading, formula, sampleDeltaInMS) {
     const date = convertReadingDate(reading.date, sampleDeltaInMS);
     return {
-        sensorId: formula.resultId,
+        sensorId: formula._id,
         date: moment(date).toISOString(),
         source: reading.source,
         measurementType: reading.measurementType,
-        formula: formula.formulaString,
+        formula: formula.formula,
         unitOfMeasurement: reading.unitOfMeasurement,
         measurementValues: {
             [reading.sensorId]: parseFloat(reading.measurementValue)
@@ -49,7 +59,17 @@ function filterNullInArray (virtualAggregate) {
 }
 export default async function createVirtualAggregate (readings, formulas) {
     return reduce(readings, async (acc, reading) => {
-        const virtualAggregates = await map(formulas, partial(getVirtualAggregate, [reading]));
+        const correctFormulas = formulas.map((formula) => {
+            const formulaToUse = getCorrectFormula(formula, reading.measurementType, reading.date);
+            if (!formulaToUse) {
+                return null;
+            }
+            return {
+                _id: formula._id,
+                ...formulaToUse
+            };
+        }).filter(filterNullInArray);
+        const virtualAggregates = await map(correctFormulas, partial(getVirtualAggregate, [reading]));
         return acc.concat(
             /*
             *   Filter the null or undefined in the array. It's possible to have null if a

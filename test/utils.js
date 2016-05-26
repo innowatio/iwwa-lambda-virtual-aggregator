@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export function getSensorWithSourceInMeasurements (date, source) {
     return {
         "id": "eventId",
@@ -73,8 +75,30 @@ export function getReadingWithMultipleMeasurements () {
 
 export function getFormula () {
     return {
-        resultId: "site",
+        _id: "site",
         variables: ["sensor1", "sensor2"],
-        formulaString: "sensor1+sensor2"
+        measurementType: [
+            "activeEnergy",
+            "temperature",
+            "maxPower"
+        ],
+        formulas: [
+            {
+                formula: "sensor1+sensor2",
+                measurementType: ["activeEnergy", "maxPower"],
+                variables: ["sensor1", "sensor2"],
+                sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                start: "1900-01-01T00:00:00.000Z",
+                end: "2100-01-01T00:00:00.000Z"
+            },
+            {
+                formula: "sensor1+sensor2",
+                measurementType: ["temperature"],
+                variables: ["sensor1", "sensor2"],
+                sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
+                start: "1900-01-01T00:00:00.000Z",
+                end: "2100-01-01T00:00:00.000Z"
+            }
+        ]
     };
 }
