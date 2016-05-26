@@ -1,5 +1,5 @@
 import {isNil, values} from "ramda";
-import sum from "lodash.sum";
+import {parse} from "mathjs";
 
 function skipSum (measurements) {
     return measurements.findIndex(isNil) >= 0;
@@ -10,9 +10,12 @@ function applyFormula (aggregate) {
     if (skipSum(measurements)) {
         return null;
     }
+    const parsedFormula = parse(aggregate.formula);
+    const formula = parsedFormula.compile();
+
     return {
         ...aggregate,
-        result: sum(measurements)
+        result: formula.eval(aggregate.measurementValues)
     };
 }
 

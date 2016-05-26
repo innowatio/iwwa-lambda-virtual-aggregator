@@ -13,11 +13,11 @@
     "bluebird": "^3.4.0",
     "bunyan": "^1.8.1",
     "dotenv": "^2.0.0",
+    "iwwa-formula-resolver": "^1.0.0",
     "kinesis-router": "^1.2.1",
     "lk-dispatch": "^1.1.0",
     "lodash.get": "^4.3.0",
     "lodash.inrange": "^3.3.4",
-    "lodash.sum": "^4.0.2",
     "moment": "^2.13.0",
     "mongodb": "^2.1.20",
     "ramda": "^0.21.0"
