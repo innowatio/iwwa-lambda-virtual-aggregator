@@ -36,6 +36,7 @@ export default async function pipeline (event) {
         return null;
     }
     // Calculate all
+    console.log(virtualAggregatesToCalculate);
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
     if (isEmpty(virtualAggregatesToSubmit)) {
         return null;
