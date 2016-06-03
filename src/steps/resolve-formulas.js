@@ -11,7 +11,7 @@ function roundTwoDecimal (value) {
 
 // replace sensors names to avoid issues with ids containing '-'
 function replaceSensors (aggregate) {
-    const variables = Object.keys(aggregate.measurementValues).sort((a, b) => (a + "").length < (b+ "").length);
+    const variables = Object.keys(aggregate.measurementValues).sort((a, b) => (b+ "").length - (a + "").length);
     var replacedAggregate = {
         ...aggregate,
         measurementValues: {}

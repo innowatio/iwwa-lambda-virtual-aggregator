@@ -20,10 +20,10 @@ describe("resolveFormulas", () => {
             date: "2016-01-28T00:11:50.000Z",
             source: "reading",
             measurementType: "reactiveEnergy",
-            formula: "sensor-11+sensor-22",
+            formula: "sensor-111+sensor-22",
             unitOfMeasurement: "kWh",
             measurementValues: {
-                "sensor-11": 1, "sensor-22": 5.222
+                "sensor-111": 1, "sensor-22": 5.222
             }
         }];
 
@@ -43,10 +43,10 @@ describe("resolveFormulas", () => {
             date: "2016-01-28T00:11:50.000Z",
             source: "reading",
             measurementType: "reactiveEnergy",
-            formula: "sensor-11+sensor-22",
+            formula: "sensor-111+sensor-22",
             unitOfMeasurement: "kWh",
             measurementValues: {
-                "sensor-11": 1, "sensor-22": 5.222
+                "sensor-111": 1, "sensor-22": 5.222
             },
             result: 6.22
         }];
