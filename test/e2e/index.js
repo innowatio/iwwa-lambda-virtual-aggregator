@@ -8,7 +8,7 @@ chai.use(sinonChai);
 import mongodb from "services/mongodb";
 import {AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION, SENSOR_INSERT} from "config";
 import {getEventFromObject, run} from "../mocks";
-import {getReadingWithMultipleMeasurements, getSensorWithSourceInMeasurements, getFormula} from "../utils";
+import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
 import stepPutInKinesis from "steps/put-in-kinesis";
 
