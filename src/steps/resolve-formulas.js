@@ -5,6 +5,10 @@ function skipSum (measurements) {
     return measurements.findIndex(isNil) >= 0;
 }
 
+function roundTwoDecimal (value) {
+    return Math.round(value * 100, -2) / 100;
+}
+
 // replace sensors names to avoid issues with ids containing '-'
 function replaceSensors (aggregate) {
     const variables = Object.keys(aggregate.measurementValues).sort((a, b) => (a + "").length < (b+ "").length);
@@ -28,10 +32,11 @@ function applyFormula (aggregate) {
     const newAggregate = replaceSensors(aggregate);
     const parsedFormula = parse(newAggregate.formula);
     const formula = parsedFormula.compile();
+    const result = formula.eval(newAggregate.measurementValues);
 
     return {
         ...aggregate,
-        result: formula.eval(newAggregate.measurementValues)
+        result: roundTwoDecimal(result)
     };
 }
 

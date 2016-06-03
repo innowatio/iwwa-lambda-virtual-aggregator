@@ -37,7 +37,7 @@ describe("resolveFormulas", () => {
             measurementValues: {
                 sensor1: 0.808, sensor2: 5
             },
-            result: 5.808
+            result: 5.81
         }, {
             sensorId: "site2",
             date: "2016-01-28T00:11:50.000Z",
@@ -48,7 +48,7 @@ describe("resolveFormulas", () => {
             measurementValues: {
                 "sensor-11": 1, "sensor-22": 5.222
             },
-            result: 6.222
+            result: 6.22
         }];
 
         expect(resolveFormulas(aggregates)).to.deep.equals(expected);
