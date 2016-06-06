@@ -1,12 +1,11 @@
 import {isNil, values} from "ramda";
-import {parse} from "mathjs";
+import {parse, round} from "mathjs";
+
+
+const DECIMALS = 3;
 
 function skipSum (measurements) {
     return measurements.findIndex(isNil) >= 0;
-}
-
-function roundTwoDecimal (value) {
-    return Math.round(value * 100, -2) / 100;
 }
 
 // replace sensors names to avoid issues with ids containing '-'
@@ -32,11 +31,11 @@ function applyFormula (aggregate) {
     const newAggregate = replaceSensors(aggregate);
     const parsedFormula = parse(newAggregate.formula);
     const formula = parsedFormula.compile();
-    const result = formula.eval(newAggregate.measurementValues);
+    const result = round(formula.eval(newAggregate.measurementValues), DECIMALS);
 
     return {
         ...aggregate,
-        result: roundTwoDecimal(result)
+        result: result
     };
 }
 

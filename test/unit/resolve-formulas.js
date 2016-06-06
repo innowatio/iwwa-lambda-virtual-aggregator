@@ -13,7 +13,7 @@ describe("resolveFormulas", () => {
             formula: "sensor1+sensor2",
             unitOfMeasurement: "kWh",
             measurementValues: {
-                sensor1: 0.808, sensor2: 5
+                sensor1: 0.8086, sensor2: 5
             }
         }, {
             sensorId: "site2",
@@ -35,9 +35,9 @@ describe("resolveFormulas", () => {
             formula: "sensor1+sensor2",
             unitOfMeasurement: "kWh",
             measurementValues: {
-                sensor1: 0.808, sensor2: 5
+                sensor1: 0.8086, sensor2: 5
             },
-            result: 5.81
+            result: 5.809
         }, {
             sensorId: "site2",
             date: "2016-01-28T00:11:50.000Z",
@@ -48,7 +48,7 @@ describe("resolveFormulas", () => {
             measurementValues: {
                 "sensor-111": 1, "sensor-22": 5.222
             },
-            result: 6.22
+            result: 6.222
         }];
 
         expect(resolveFormulas(aggregates)).to.deep.equals(expected);

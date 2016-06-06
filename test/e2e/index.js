@@ -143,7 +143,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 4.81,
+                        value: 4.808,
                         unitOfMeasurement: "kWh"
                     }]
                 }
@@ -167,11 +167,11 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 4.81,
+                        value: 4.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "reactiveEnergy",
-                        value: 0.32,
+                        value: 0.315,
                         unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
@@ -225,7 +225,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 2.81,
+                        value: 2.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "maxPower",
@@ -241,7 +241,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "reactiveEnergy",
-                        value: 5.12,
+                        value: 5.115,
                         unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
@@ -280,7 +280,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 5.81,
+                        value: 5.808,
                         unitOfMeasurement: "kWh"
                     }]
                 }
@@ -301,7 +301,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 0.81,
+                        value: 0.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "maxPower",
@@ -347,7 +347,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 4.81,
+                        value: 4.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "maxPower",
@@ -375,7 +375,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 4.81,
+                        value: 4.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "maxPower",
@@ -391,7 +391,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "reactiveEnergy",
-                        value: 7.32,
+                        value: 7.315,
                         unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
@@ -426,7 +426,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 1.81,
+                        value: 1.808,
                         unitOfMeasurement: "kWh"
                     }]
                 }
@@ -453,11 +453,11 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 2.81,
+                        value: 2.808,
                         unitOfMeasurement: "kWh"
                     }, {
                         type: "reactiveEnergy",
-                        value: 0.12,
+                        value: 0.115,
                         unitOfMeasurement: "kVArh"
                     }, {
                         type: "maxPower",
@@ -515,7 +515,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 1.81,
+                        value: 1.808,
                         unitOfMeasurement: "kWh"
                     }]
                 }
@@ -536,7 +536,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     source: "reading",
                     measurements: [{
                         type: "activeEnergy",
-                        value: 9.81,
+                        value: 9.808,
                         unitOfMeasurement: "kWh"
                     }]
                 }
