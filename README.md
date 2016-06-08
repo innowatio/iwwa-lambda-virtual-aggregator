@@ -3,21 +3,21 @@
 
 # iwwa-lambda-virtual-aggregator
 
-Aggregator for virtual-pods
+Lambda function to aggregate virtual-pods
 
-## Env variables
+## Deployment
 
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_DEFAULT_REGION`
-- `LAMBDA_NAME`
-- `LAMBDA_ROLE_ARN`
-- `S3_BUCKET`
-- `READINGS_API_ENDPOINT`
+This project deployment is automated with Lambdafile. For more info [`lambda-boilerplate`](https://github.com/lk-architecture/lambda-boilerplate/).
 
-- `__FUNC_CONFIG__MONGODB_URL`
-- `__FUNC_CONFIG__DEBUG`
+### Configuration
 
-## to run tests
+The following environment variables are needed to configure the function:
 
-`npm run test`
+- `MONGODB_URL` __string__ *required*: URL of the MongoDB endpoint
+- `DEBUG` __boolean__ *optional*: set to `true` if you want more log from [`kinesis-router`](https://github.com/lk-architecture/kkinesis-router/).
+
+### Run test
+
+In order to run tests locally a MongoDB instance and a `MONGODB_URL` environment
+param are needed.
+Then, just run `npm run test` command.
