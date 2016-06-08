@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/innowatio/iwwa-lambda-virtual-aggregator.svg?branch=master)](https://travis-ci.org/innowatio/iwwa-lambda-virtual-aggregator)
 [![codecov.io](https://codecov.io/github/innowatio/iwwa-lambda-virtual-aggregator/coverage.svg?branch=master)](https://codecov.io/github/innowatio/iwwa-lambda-virtual-aggregator?branch=master)
+[![Dependency Status](https://david-dm.org/innowatio/iwwa-lambda-virtual-aggregator.svg)](https://david-dm.org/innowatio/iwwa-lambda-virtual-aggregator)
+[![devDependency Status](https://david-dm.org/innowatio/iwwa-lambda-virtual-aggregator/dev-status.svg)](https://david-dm.org/innowatio/iwwa-lambda-virtual-aggregator#info=devDependencies)
 
 # iwwa-lambda-virtual-aggregator
 
