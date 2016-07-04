@@ -8,6 +8,16 @@ function skipSum (measurements) {
     return measurements.findIndex(isNil) >= 0;
 }
 
+function randomString (len) {
+    const charSet = "abcdefghijklmnopqrstuvwxyz";
+    var randomString = "";
+    for (var i = 0; i < len; i++) {
+        var randomPoz = Math.floor(Math.random() * charSet.length);
+        randomString += charSet.substring(randomPoz, randomPoz+1);
+    }
+    return randomString;
+}
+
 // replace sensors names to avoid issues with ids containing '-'
 function replaceSensors (aggregate) {
     const variables = Object.keys(aggregate.measurementValues).sort((a, b) => (b+ "").length - (a + "").length);
@@ -16,7 +26,7 @@ function replaceSensors (aggregate) {
         measurementValues: {}
     };
     variables.forEach((variable) => {
-        const newVariable = variable.replace(/[^0-9a-z]/gi, "");
+        const newVariable = randomString(8);
         replacedAggregate.measurementValues[newVariable] = aggregate.measurementValues[variable];
         replacedAggregate.formula = replacedAggregate.formula.replace(variable, newVariable);
     });

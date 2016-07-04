@@ -62,8 +62,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     };
 
     const aggregateMockActiveEnergySensor3 = {
-        _id: "sensor3-2016-01-28-reading-activeEnergy",
-        sensorId: "sensor3",
+        _id: "30-03-2016-01-28-reading-activeEnergy",
+        sensorId: "30-03",
         day: "2016-01-28",
         source: "reading",
         measurementType: "activeEnergy",
@@ -73,8 +73,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     };
 
     const aggregateMockReactiveEnergySensor3 = {
-        _id: "sensor3-2016-01-28-reading-reactiveEnergy",
-        sensorId: "sensor3",
+        _id: "30-03-2016-01-28-reading-reactiveEnergy",
+        sensorId: "30-03",
         day: "2016-01-28",
         source: "reading",
         measurementType: "reactiveEnergy",
@@ -84,8 +84,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
     };
 
     const aggregateMockMaxPowerSensor3 = {
-        _id: "sensor3-2016-01-28-reading-maxPower",
-        sensorId: "sensor3",
+        _id: "30-03-2016-01-28-reading-maxPower",
+        sensorId: "30-03",
         day: "2016-01-28",
         source: "reading",
         measurementType: "maxPower",
@@ -96,13 +96,13 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
     const mockFormulas = {
         _id: "site2",
-        variables: ["sensor1", "sensor2", "sensor3"],
+        variables: ["sensor1", "sensor2", "30-03"],
         measurementType: ["activeEnergy", "temperature", "maxPower", "reactiveEnergy"],
         formulas: [
             {
-                formula: "sensor1+sensor2+sensor3",
+                formula: "sensor1+sensor2+30-03",
                 measurementType: ["activeEnergy", "maxPower", "temperature", "reactiveEnergy"],
-                variables: ["sensor1", "sensor2", "sensor3"],
+                variables: ["sensor1", "sensor2", "30-03"],
                 sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
                 start: "1900-01-01T00:00:00.000Z",
                 end: "2100-01-01T00:00:00.000Z"
@@ -469,7 +469,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
             const mockFormulasWithSampleDelta = {
                 _id: "site2",
-                variables: ["sensor1", "sensor2", "sensor3"],
+                variables: ["sensor1", "sensor2", "30-03"],
                 measurementType: [
                     "activeEnergy",
                     "temperature",
@@ -478,9 +478,9 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                 ],
                 formulas: [
                     {
-                        formula: "sensor1+sensor2+sensor3",
+                        formula: "sensor1+sensor2+30-03",
                         measurementType: ["activeEnergy", "maxPower", "temperature", "reactiveEnergy"],
-                        variables: ["sensor1", "sensor2", "sensor3"],
+                        variables: ["sensor1", "sensor2", "30-03"],
                         sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
                         start: "1900-01-01T00:00:00.000Z",
                         end: "2016-01-01T00:00:00.000Z"
