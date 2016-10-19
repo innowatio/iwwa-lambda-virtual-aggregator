@@ -1,8 +1,8 @@
 import {FORMULAS_COLLECTION} from "../config";
-import mongodb from "../services/mongodb";
+import {getMongoClient} from "../services/mongodb";
 
 export default async function findAllFormulaByVariable (variable) {
-    const db = await mongodb;
+    const db = await getMongoClient();
     const query = {
         variables: {
             $in: [variable]

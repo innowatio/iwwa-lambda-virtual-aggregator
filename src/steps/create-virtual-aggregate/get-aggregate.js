@@ -1,7 +1,7 @@
 import moment from "moment";
 
 import {AGGREGATES_COLLECTION_NAME} from "../../config";
-import mongodb from "../../services/mongodb";
+import {getMongoClient} from "../../services/mongodb";
 
 function getDayFromReading (date) {
     return moment.utc(date, moment.ISO_8601, true).format("YYYY-MM-DD");
@@ -13,7 +13,7 @@ function getAggregateId (reading) {
 }
 
 export default async function getAggregate (sensorId, measurementType, source, date) {
-    const db = await mongodb;
+    const db = await getMongoClient();
     const query = {
         _id: getAggregateId({sensorId, measurementType, source, date})
     };
