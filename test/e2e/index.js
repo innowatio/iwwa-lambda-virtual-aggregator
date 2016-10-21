@@ -5,12 +5,12 @@ import sinonChai from "sinon-chai";
 
 chai.use(sinonChai);
 
-import {getMongoClient} from "services/mongodb";
 import {AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION, SENSOR_INSERT} from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
 import stepPutInKinesis from "steps/put-in-kinesis";
+import {getMongoClient} from "services/mongodb";
 
 describe("`iwwa-lambda-virtual-aggregator`", () => {
 
