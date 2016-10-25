@@ -1,6 +1,7 @@
 import {isNil, values} from "ramda";
 import {parse, round} from "mathjs";
 
+import log from "../services/logger";
 
 const DECIMALS = 3;
 
@@ -41,6 +42,8 @@ function applyFormula (aggregate) {
     const newAggregate = replaceSensors(aggregate);
     const parsedFormula = parse(newAggregate.formula);
     const formula = parsedFormula.compile();
+    log.debug(parsedFormula, "parsed formula");
+    log.debug(newAggregate, "newAggregate");
     const result = round(formula.eval(newAggregate.measurementValues), DECIMALS);
 
     return {
