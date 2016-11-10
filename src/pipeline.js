@@ -32,7 +32,7 @@ export default async function pipeline (event) {
 
     // Find related formulas
     const formulas = await findAllFormulaByVariable(rawReading.sensorId);
-    log.debug(formulas, "formulas");
+    log.debug({formulas});
     if (isEmpty(formulas)) {
         log.info("LAMBDA SKIPPED EMPTY FORMULAS");
         return null;
@@ -40,7 +40,7 @@ export default async function pipeline (event) {
 
     // Find related sensors readings value
     const virtualAggregatesToCalculate = await createVirtualAggregate(readings, formulas);
-    log.debug(virtualAggregatesToCalculate, "virual aggregates to calculate");
+    log.debug({virtualAggregatesToCalculate});
     if (isEmpty(virtualAggregatesToCalculate)) {
         log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATE");
         return null;
@@ -48,7 +48,7 @@ export default async function pipeline (event) {
 
     // Calculate all
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
-    log.debug(virtualAggregatesToSubmit, "virtual aggregates to submit");
+    log.debug({virtualAggregatesToSubmit});
     if (isEmpty(virtualAggregatesToSubmit)) {
         log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATES TO SUBMIT");
         return null;
