@@ -31,7 +31,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                     SENSOR_INSERT,
                     expectedBody
                 );
-            }
+            };
 
             const aggregateMockActiveEnergySensor2 = {
                 _id: `sensor2-2016-01-28-${source}-activeEnergy`,
@@ -213,7 +213,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                             }
                         ]
                     };
-                    formulas.update({ _id: "site" }, formula);
+                    formulas.update({_id: "site"}, formula);
                     const event = getEventFromObject(
                         getSensorWithSourceInMeasurements("2016-01-28T00:18:36.389Z", source)
                     );
