@@ -28,6 +28,7 @@ export default async function pipeline (event) {
 
     // Filter and spread reading
     const readings = spreadReadingByMeasurementType(rawReading);
+    log.debug({readings});
 
     // Find related formulas
     const formulas = await findAllFormulaByVariable(rawReading.sensorId);
