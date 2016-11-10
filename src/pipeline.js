@@ -11,6 +11,7 @@ import {putRecords} from "./steps/put-in-kinesis";
 export default async function pipeline (event) {
     log.info(event, "event");
     const rawReading = event.data.element;
+
     /*
     *   Workaround: some events have been incorrectly generated and thus don't
     *   have an `element` property. When processing said events, just return and
@@ -19,12 +20,15 @@ export default async function pipeline (event) {
     if (!rawReading) {
         return null;
     }
+
     // Check if use it or not
     if (skipProcessing(rawReading)) {
         return null;
     }
+
     // Filter and spread reading
     const readings = spreadReadingByMeasurementType(rawReading);
+
     // Find related formulas
     const formulas = await findAllFormulaByVariable(rawReading.sensorId);
     log.debug(formulas, "formulas");
@@ -32,6 +36,7 @@ export default async function pipeline (event) {
         log.info("LAMBDA SKIPPED EMPTY FORMULAS");
         return null;
     }
+
     // Find related sensors readings value
     const virtualAggregatesToCalculate = await createVirtualAggregate(readings, formulas);
     log.debug(virtualAggregatesToCalculate, "virual aggregates to calculate");
@@ -39,6 +44,7 @@ export default async function pipeline (event) {
         log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATE");
         return null;
     }
+
     // Calculate all
     const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
     log.debug(virtualAggregatesToSubmit, "virtual aggregates to submit");
@@ -46,6 +52,7 @@ export default async function pipeline (event) {
         log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATES TO SUBMIT");
         return null;
     }
+
     await putRecords(virtualAggregatesToSubmit);
 
     return null;

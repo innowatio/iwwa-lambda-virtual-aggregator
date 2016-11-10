@@ -1,20 +1,44 @@
-import {expect} from "chai";
+import {
+    expect
+} from "chai";
 
-import {getReading} from "../utils";
+import {
+    ALLOWED_SOURCES
+} from "config";
+
+import {
+    getReading
+} from "../utils";
 
 import skipProcessing from "steps/skip-processing";
 
 describe("skipProcessing", () => {
 
-    it("skips if the source is not a `reading`", () => {
-        const notReading = getReading({source: "forecast", type: "activeEnergy"});
+    const sources = ALLOWED_SOURCES;
 
-        expect(skipProcessing(notReading)).to.be.equals(true);
+    sources.forEach(source => {
+        it(`doesn't skips if the source is a '${source}'`, () => {
+            const reading = getReading({
+                source,
+                type: "activeEnergy"
+            });
+            expect(skipProcessing(reading)).to.be.equals(false);
+        });
     });
 
-    it("doesn't skips if the source is a `reading`", () => {
-        const reading = getReading({source: "reading", type: "activeEnergy"});
+    const randomSources = [
+        "computed",
+        "data-science"
+    ];
 
-        expect(skipProcessing(reading)).to.be.equals(false);
+    randomSources.forEach(source => {
+        it(`skips if the source is not allowed ('${source}')`, () => {
+            const reading = getReading({
+                source,
+                type: "activeEnergy"
+            });
+            expect(skipProcessing(reading)).to.be.equals(true);
+        });
     });
+
 });
