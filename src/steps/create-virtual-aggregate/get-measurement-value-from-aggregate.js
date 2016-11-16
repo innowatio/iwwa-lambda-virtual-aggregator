@@ -46,7 +46,5 @@ export default function measurementByAggregator(parsedAggregate, date, deltaTime
             return min(measurements.map(x => x.value));
         case "sum":
             return sum(measurements.map(x => x.value));
-        default:
-            return null;
     }
 }
