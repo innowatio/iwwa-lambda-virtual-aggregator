@@ -1,21 +1,52 @@
 import moment from "moment";
 import inRange from "lodash.inrange";
+import first from "lodash.first";
+import last from "lodash.last";
+import max from "lodash.max";
+import min from "lodash.min";
+import {
+    mean,
+    sum
+} from "ramda";
 
-function getMeasurementIndex (parsedAggregate, date, sampleDeltaInMS) {
-    const readingDate = moment(date).valueOf();
-    return parsedAggregate.measurementTimes.findIndex(measurementTime => {
-        return inRange(
-            measurementTime,
-            readingDate,
-            moment(readingDate).add(sampleDeltaInMS, "ms").valueOf()
-        );
-    });
-}
+import log from "../../services/logger";
 
-export default function getMeasurementValueFromAggregate (parsedAggregate, date, sampleDeltaInMS) {
-    const measurementIndex = getMeasurementIndex(parsedAggregate, date, sampleDeltaInMS);
-    if (measurementIndex >= 0) {
-        return parsedAggregate.measurementValues[measurementIndex];
+export default function measurementByAggregator(parsedAggregate, date, deltaTime, aggregationType = "oldest") {
+
+    const startTime = moment(date).valueOf();
+    const endTime = moment(date).valueOf() + deltaTime;
+
+    const measurements = parsedAggregate.measurementTimes.map((measurementTime, index) => {
+        return {
+            time: measurementTime,
+            value: parsedAggregate.measurementValues[index]
+        };
+    }).filter(x => inRange(x.time, startTime, endTime));
+
+    if (measurements.length === 0) {
+        return null;
     }
-    return null;
+
+    log.info({
+        parsedAggregate,
+        measurements,
+        aggregationType
+    });
+
+    switch (aggregationType) {
+        case "max":
+            return max(measurements.map(x => x.value));
+        case "mean":
+            return mean(measurements.map(x => x.value));
+        case "newest":
+            return last(measurements.map(x => x.value));
+        case "oldest":
+            return first(measurements.map(x => x.value));
+        case "min":
+            return min(measurements.map(x => x.value));
+        case "sum":
+            return sum(measurements.map(x => x.value));
+        default:
+            return null;
+    }
 }

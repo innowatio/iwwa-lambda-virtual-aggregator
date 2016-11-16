@@ -1,4 +1,6 @@
-import {expect} from "chai";
+import {
+    expect
+} from "chai";
 import moment from "moment";
 
 import getMeasurementValueFromAggregate from "steps/create-virtual-aggregate/get-measurement-value-from-aggregate";
@@ -42,16 +44,57 @@ describe("`getMeasurementValueFromAggregate` function", () => {
         ]
     };
 
+    const date = "2016-01-28T00:10:00.000Z";
+    const sampleDeltaInMS = moment.duration(5, "minutes").asMilliseconds();
+
+    const parsedAggregate = {
+        day: "2016-01-28",
+        measurementValues: [10, 25, 55, 10, 10],
+        measurementTimes: [
+            1453939500000,
+            1453939800000,
+            1453939800500,
+            1453939801000,
+            1453940100000
+        ]
+    };
+
+    it("return the correct data with aggregation type `oldest`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS);
+        expect(result).to.equal(25);
+    });
+
+    it("return the correct data with aggregation type `newest`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, "newest");
+        expect(result).to.equal(10);
+    });
+
+    it("return the correct data with aggregation type `sum`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, "sum");
+        expect(result).to.equal(90);
+    });
+
+    it("return the correct data with aggregation type `min`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, "min");
+        expect(result).to.equal(10);
+    });
+
+    it("return the correct data with aggregation type `max`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, "max");
+        expect(result).to.equal(55);
+    });
+
+    it("return the correct data with aggregation type `mean`", () => {
+        const result = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, "mean");
+        expect(result).to.equal(30);
+    });
+
     it("return the correct data if it's present in selected range of time", () => {
-        const date = "2016-01-28T00:10:00.000Z";
-        const sampleDeltaInMS = moment.duration(5, "minutes").asMilliseconds();
         const ret = getMeasurementValueFromAggregate(parsedAggregate2, date, sampleDeltaInMS);
         expect(ret).to.equal(0.3);
     });
 
     it("return `null` if there isn't at least one values in the specified range", () => {
-        const date = "2016-01-28T00:10:00.000Z";
-        const sampleDeltaInMS = moment.duration(1, "minutes").asMilliseconds();
         const ret = getMeasurementValueFromAggregate(parsedAggregate1, date, sampleDeltaInMS);
         expect(ret).to.equal(null);
     });
