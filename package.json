@@ -8,10 +8,10 @@
     "url": "https://github.com/innowatio/iwwa-lambda-virtual-aggregator"
   },
   "dependencies": {
-    "aws-sdk": "^2.7.0",
+    "aws-sdk": "^2.7.2",
     "babel-polyfill": "^6.16.0",
     "bluebird": "^3.4.6",
-    "bunyan": "^1.8.4",
+    "bunyan": "^1.8.5",
     "dotenv": "^2.0.0",
     "kinesis-router": "^1.3.1",
     "lk-dispatch": "^1.1.0",
@@ -30,21 +30,30 @@
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
     "babel-eslint": "^7.1.0",
+    "babel-plugin-istanbul": "^3.0.0",
     "babel-plugin-rewire": "^1.0.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-0": "^6.16.0",
     "chai": "^3.5.0",
     "codecov": "^1.0.1",
-    "eslint": "^3.10.0",
-    "isparta": "^4.0.0",
+    "eslint": "^3.10.2",
     "mocha": "^3.1.2",
+    "nyc": "^9.0.1",
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0"
   },
+  "nyc": {
+    "require": [
+      "babel-register",
+      "babel-polyfill"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
   "scripts": {
     "build": "babel src -d bundle",
-    "codecov": "codecov",
-    "coverage": "NODE_ENV=test NODE_PATH=src babel-node $(npm bin)/isparta cover node_modules/mocha/bin/_mocha -- --recursive",
+    "codecov": "NODE_ENV=test NODE_PATH=src nyc mocha report --reporter=text-lcov > coverage.lcov --recursive && codecov",
+    "coverage": "NODE_ENV=test NODE_PATH=src nyc mocha --recursive",
     "dev": "npm test -- --watch",
     "lint": "eslint src test",
     "test": "NODE_PATH=src NODE_ENV=test mocha --compilers js:babel-core/register --recursive"
