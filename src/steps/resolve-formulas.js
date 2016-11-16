@@ -42,8 +42,10 @@ function applyFormula (aggregate) {
     const newAggregate = replaceSensors(aggregate);
     const parsedFormula = parse(newAggregate.formula);
     const formula = parsedFormula.compile();
-    log.debug(parsedFormula, "parsed formula");
-    log.debug(newAggregate, "newAggregate");
+    log.debug({
+        parsedFormula,
+        newAggregate
+    });
     const result = round(formula.eval(newAggregate.measurementValues), DECIMALS);
 
     return {
@@ -53,9 +55,9 @@ function applyFormula (aggregate) {
 }
 
 export default function resolveFormulas (virtualAggregates) {
-    return (
-        virtualAggregates
-            .map(applyFormula)
-            .filter(aggregate => !isNil(aggregate))
-    );
+    const resolvedFormulas = virtualAggregates
+        .map(applyFormula)
+        .filter(aggregate => !isNil(aggregate));
+    log.debug({resolvedFormulas});
+    return resolvedFormulas;
 }

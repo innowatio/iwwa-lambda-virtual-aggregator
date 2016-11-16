@@ -11,6 +11,7 @@ function getReadingSource (reading) {
     assert(is(String, source), "Reading has no source");
     return source;
 }
+
 export default function spreadReadingByMeasurementType (reading) {
     const source = getReadingSource(reading);
     return reading.measurements.map(measurement => {

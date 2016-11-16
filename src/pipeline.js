@@ -9,7 +9,7 @@ import resolveFormulas from "./steps/resolve-formulas";
 import {putRecords} from "./steps/put-in-kinesis";
 
 export default async function pipeline (event) {
-    log.info(event, "event");
+    log.info({event});
     const rawReading = event.data.element;
 
     /*
