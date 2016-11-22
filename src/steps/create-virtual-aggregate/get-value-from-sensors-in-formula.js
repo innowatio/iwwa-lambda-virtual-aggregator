@@ -26,19 +26,27 @@ export default async function getValueFromSensorsInFormula (readingSensorId, var
         measurementType,
         source
     } = virtualAggregate;
+    log.info({
+        virtualAggregate,
+        sensors,
+        readingSensorId,
+        variables
+    });
     const values = await reduce(sensors, async (acc, sensorId) => {
         const aggregate = await getAggregate(sensorId, measurementType, source, date);
+        log.info({aggregate});
         if (!aggregate) {
             return null;
         }
         const parsedAggregate = parseAggregate(aggregate);
         // Get the delta between the point of measurements, that it will be the range of time where I get the values to use in formula.
         const measurementValueFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, aggregationType);
+        log.info({measurementValueFromAggregate});
         return {
             ...acc,
             [sensorId]: measurementValueFromAggregate
         };
     }, {});
-    log.info({virtualAggregate});
+    log.info({values});
     return values;
 }
