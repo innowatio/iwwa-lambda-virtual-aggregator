@@ -26,12 +26,20 @@ export default async function getValueFromSensorsInFormula (reading, variables, 
         }
 
         var parsedAggregate = parseAggregate(aggregate);
+        const readingTime = moment.utc(reading.date).valueOf();
+        const readingValue = parseFloat(reading.measurementValue);
+
         if (parsedAggregate.sensorId === reading.sensorId) {
-            parsedAggregate = {
-                ...parsedAggregate,
-                measurementValues: [...parsedAggregate.measurementValues, parseFloat(reading.measurementValue)],
-                measurementTimes: [...parsedAggregate.measurementTimes, moment.utc(reading.date).valueOf()]
-            };
+            const existingReadings = parsedAggregate.measurementTimes.findIndex(x => x === readingTime);
+            if (0 <= existingReadings) {
+                parsedAggregate.measurementValues[existingReadings] = readingValue;
+            } else {
+                parsedAggregate = {
+                    ...parsedAggregate,
+                    measurementValues: [...parsedAggregate.measurementValues, readingValue],
+                    measurementTimes: [...parsedAggregate.measurementTimes, readingTime]
+                };
+            }
         }
 
         // Get the delta between the point of measurements, that it will be the range of time where I get the values to use in formula.

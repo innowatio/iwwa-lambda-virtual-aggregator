@@ -345,8 +345,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         source: source,
                         measurementType: "activeEnergy",
                         unitOfMeasurement: "kWh",
-                        measurementValues: "1,2,3,4,4,6,6,7,9,10",
-                        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940400000,1453940700000,1453941000000, 1453941300000, 1453941600000"
+                        measurementValues: "1,2,3,4,0,10,4500,6,7,9,10",
+                        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940400500,1453940556389,1453940700000,1453941000000, 1453941300000, 1453941600000"
                     });
 
                     await run(handler, event);
