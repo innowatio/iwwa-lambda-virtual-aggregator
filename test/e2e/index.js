@@ -308,12 +308,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                             source,
                             measurements: [{
                                 type: "activeEnergy",
-                                value: 0.808,
+                                value: 3.603,
                                 unitOfMeasurement: "kWh"
-                            }, {
-                                type: "maxPower",
-                                value: 0,
-                                unitOfMeasurement: "VAr"
                             }]
                         }
                     };
@@ -334,12 +330,23 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                             {
                                 formula: "sensor1",
                                 variables: ["sensor1"],
+                                aggregationType: "mean",
                                 measurementType: ["activeEnergy", "maxPower", "temperature"],
                                 sampleDeltaInMS: moment.duration(5, "minutes").asMilliseconds(),
                                 start: "1900-01-01T00:00:00.000Z",
                                 end: "2100-01-01T00:00:00.000Z"
                             }
                         ]
+                    });
+                    await aggregates.insert({
+                        _id: `sensor1-2016-01-28-${source}-activeEnergy`,
+                        sensorId: "sensor1",
+                        day: "2016-01-28",
+                        source: source,
+                        measurementType: "activeEnergy",
+                        unitOfMeasurement: "kWh",
+                        measurementValues: "1,2,3,4,4,6,6,7,9,10",
+                        measurementTimes: "1453939200000,1453939500000,1453939800000,1453940100000,1453940400000,1453940400000,1453940700000,1453941000000, 1453941300000, 1453941600000"
                     });
 
                     await run(handler, event);

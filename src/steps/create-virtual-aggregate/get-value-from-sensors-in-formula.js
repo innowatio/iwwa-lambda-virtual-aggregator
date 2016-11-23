@@ -1,25 +1,12 @@
-import {filter, partial} from "ramda";
 import {reduce} from "bluebird";
+import moment from "moment";
 
 import log from "../../services/logger";
 import parseAggregate from "../parse-aggregate";
 import getAggregate from "./get-aggregate";
 import getMeasurementValueFromAggregate from "./get-measurement-value-from-aggregate";
 
-function filterFormula (readingSensorId, variable) {
-    return variable !== readingSensorId;
-}
-
-// Get the sensors in the `variables` in the formula, filtered by the sensor of the given event.
-function getSensorInFormula (readingSensorId, variables) {
-    return filter(
-        partial(filterFormula, [readingSensorId]),
-        variables
-    );
-}
-
-export default async function getValueFromSensorsInFormula (readingSensorId, variables, virtualAggregate, sampleDeltaInMS) {
-    const sensors = getSensorInFormula(readingSensorId, variables);
+export default async function getValueFromSensorsInFormula (reading, variables, virtualAggregate, sampleDeltaInMS) {
     const {
         aggregationType,
         date,
@@ -28,17 +15,25 @@ export default async function getValueFromSensorsInFormula (readingSensorId, var
     } = virtualAggregate;
     log.info({
         virtualAggregate,
-        sensors,
-        readingSensorId,
+        reading,
         variables
     });
-    const values = await reduce(sensors, async (acc, sensorId) => {
+    const values = await reduce(variables, async (acc, sensorId) => {
         const aggregate = await getAggregate(sensorId, measurementType, source, date);
         log.info({aggregate});
         if (!aggregate) {
             return null;
         }
-        const parsedAggregate = parseAggregate(aggregate);
+
+        var parsedAggregate = parseAggregate(aggregate);
+        if (parsedAggregate.sensorId === reading.sensorId) {
+            parsedAggregate = {
+                ...parsedAggregate,
+                measurementValues: [...parsedAggregate.measurementValues, parseFloat(reading.measurementValue)],
+                measurementTimes: [...parsedAggregate.measurementTimes, moment.utc(reading.date).valueOf()]
+            };
+        }
+
         // Get the delta between the point of measurements, that it will be the range of time where I get the values to use in formula.
         const measurementValueFromAggregate = getMeasurementValueFromAggregate(parsedAggregate, date, sampleDeltaInMS, aggregationType);
         log.info({measurementValueFromAggregate});

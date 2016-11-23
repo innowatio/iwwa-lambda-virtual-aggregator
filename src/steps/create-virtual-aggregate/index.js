@@ -41,7 +41,7 @@ async function getVirtualAggregate (reading, formula) {
     const sampleDeltaInMS = formula.sampleDeltaInMS || DEFAULT_SAMPLE_DELTA_IN_MS;
     const defaultVirtualAggregate = getDefaultVirtualAggregate(reading, formula, sampleDeltaInMS);
     const valueFromAggregateInFormula = await getValueFromSensorsInFormula(
-        reading.sensorId,
+        reading,
         formula.variables,
         defaultVirtualAggregate,
         sampleDeltaInMS
