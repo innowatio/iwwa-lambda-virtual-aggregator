@@ -1,6 +1,7 @@
 import {isEmpty, uniq} from "ramda";
 import {map} from "bluebird";
 import get from "lodash.get";
+import inRange from "lodash.inrange";
 import moment from "moment";
 
 import {evaluateFormula} from "iwwa-formula-resolver";
@@ -42,6 +43,7 @@ export default async function pipeline (event) {
         }
 
         const source = get(rawReading, "measurements.0.source", rawReading.source);
+        const readingTime = moment.utc(rawReading.date);
 
         await map(virtualSensors, async (virtualSensor) => {
 
@@ -49,6 +51,10 @@ export default async function pipeline (event) {
 
             const filteredFormulas = decoratedFormulas.filter(x => {
                 return x.variables.length === x.sensorsData.length;
+            }).filter(x => {
+                const formulaStart = moment.utc(x.start).valueOf();
+                const formulaEnd = moment.utc(x.end).valueOf();
+                return inRange(readingTime.valueOf(), formulaStart, formulaEnd);
             });
 
             const formulaWithResult = await map(filteredFormulas, async (decoratedFormula) => {
@@ -75,7 +81,7 @@ export default async function pipeline (event) {
             await samples.map(async (sample) => {
                 const formulasBySample = formulaWithResult.filter(x => x.sampleDeltaInMS === sample);
 
-                const date = moment.utc(moment.utc(rawReading.date).valueOf() - moment.utc(rawReading.date).valueOf() % sample).toISOString();
+                const date = moment.utc(readingTime.valueOf() - readingTime.valueOf() % sample).toISOString();
 
                 const measurements = formulasBySample.map(formula => {
                     return {
