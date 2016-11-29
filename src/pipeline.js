@@ -9,6 +9,7 @@ import log from "./services/logger";
 import {addSensorsDataToFormulas} from "./steps/add-sensors-data-to-formulas";
 import {dispatchReadingEvent} from "./steps/dispatch-reading-event";
 import {findFormulasByVariable} from "./steps/find-formulas-by-variable";
+import {removeOldVirtualReadings} from "./steps/remove-old-virtual-readings";
 import {skipProcessing} from "./steps/skip-processing";
 
 export default async function pipeline (event) {
@@ -50,7 +51,7 @@ export default async function pipeline (event) {
                 return x.variables.length === x.sensorsData.length;
             });
 
-            const formulaWithResult = filteredFormulas.map(decoratedFormula => {
+            const formulaWithResult = await map(filteredFormulas, async (decoratedFormula) => {
 
                 const result = evaluateFormula({
                     formula: decoratedFormula.formula
@@ -61,16 +62,15 @@ export default async function pipeline (event) {
                     result
                 });
 
+                await removeOldVirtualReadings(virtualSensor._id, source, decoratedFormula.measurementType, rawReading.date, decoratedFormula.sampleDeltaInMS);
+
                 return {
                     ...decoratedFormula,
                     result
-                    // type: decoratedFormula.measurementType,
-                    // value: Math.round(parseFloat(result.measurementValues) * 1000) / 1000,
-                    // unitOfMeasurement: rawReading.measurements.find(x => x.type == decoratedFormula.measurementType).unitOfMeasurement
                 };
             });
 
-            const samples = uniq(formulaWithResult.map(x => x.sampleDeltaInMS));
+            const samples = uniq(formulaWithResult.map(x => x.sampleDeltaInMS || 300000));
 
             await samples.map(async (sample) => {
                 const formulasBySample = formulaWithResult.filter(x => x.sampleDeltaInMS === sample);
