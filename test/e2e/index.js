@@ -5,16 +5,26 @@ import sinonChai from "sinon-chai";
 
 chai.use(sinonChai);
 
-import {ALLOWED_SOURCES, AGGREGATES_COLLECTION_NAME, FORMULAS_COLLECTION, SENSOR_INSERT} from "config";
+import {
+    ALLOWED_SOURCES,
+    AGGREGATES_COLLECTION_NAME,
+    FORMULAS_COLLECTION,
+    EVENT_READING_INSERTED
+} from "config";
 import {getEventFromObject, run} from "../mocks";
 import {getSensorWithSourceInMeasurements, getFormula} from "../utils";
 import {handler} from "index";
-import stepPutInKinesis from "steps/put-in-kinesis";
 import {getMongoClient} from "services/mongodb";
+import {setInstance} from "services/dispatcher";
 
 describe("`iwwa-lambda-virtual-aggregator`", () => {
 
     const sources = ALLOWED_SOURCES;
+
+    const context = {
+        succeed: spy(),
+        fail: spy()
+    };
 
     sources.forEach(source => {
 
@@ -28,7 +38,7 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             const expectCalledOnceWith = (expectedBody) => {
                 expect(mockPutRecords.callCount).equals(1);
                 expect(mockPutRecords).have.been.calledWith(
-                    SENSOR_INSERT,
+                    EVENT_READING_INSERTED,
                     expectedBody
                 );
             };
@@ -127,17 +137,12 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
             });
 
             beforeEach(async () => {
-                mockPutRecords = spy();
-                stepPutInKinesis.__Rewire__("dispatchEvent", mockPutRecords);
+                mockPutRecords = setInstance(spy());
 
                 await aggregates.remove({});
                 await formulas.remove({});
                 await aggregates.insert(aggregateMockActiveEnergySensor2);
                 await formulas.insert(getFormula());
-            });
-
-            afterEach(() => {
-                stepPutInKinesis.__Rewire__("dispatchEvent", mockPutRecords);
             });
 
             describe("creates a new aggregate for virtual measurement in the reading", () => {
@@ -159,9 +164,10 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                         getSensorWithSourceInMeasurements("2016-01-28T00:16:36.389Z", source)
                     );
 
-                    await run(handler, event);
+                    await handler(event, context);
+
                     expect(mockPutRecords).have.been.calledWith(
-                        SENSOR_INSERT,
+                        EVENT_READING_INSERTED,
                         expectedBody
                     );
                 });
@@ -177,13 +183,13 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                                 value: 4.808,
                                 unitOfMeasurement: "kWh"
                             }, {
-                                type: "reactiveEnergy",
-                                value: 0.315,
-                                unitOfMeasurement: "kVArh"
-                            }, {
                                 type: "maxPower",
                                 value: 0.9,
                                 unitOfMeasurement: "VAr"
+                            }, {
+                                type: "reactiveEnergy",
+                                value: 0.315,
+                                unitOfMeasurement: "kVArh"
                             }]
                         }
                     };
@@ -247,13 +253,13 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                             date: "2016-01-28T00:05:00.000Z",
                             source,
                             measurements: [{
-                                type: "reactiveEnergy",
-                                value: 5.115,
-                                unitOfMeasurement: "kVArh"
-                            }, {
                                 type: "maxPower",
                                 value: 2.7,
                                 unitOfMeasurement: "VAr"
+                            }, {
+                                type: "reactiveEnergy",
+                                value: 5.115,
+                                unitOfMeasurement: "kVArh"
                             }]
                         }
                     };
@@ -269,8 +275,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
                     await run(handler, event);
                     expect(mockPutRecords.callCount).to.equal(2);
-                    expect(mockPutRecords.args[0][0]).to.deep.equals(SENSOR_INSERT);
-                    expect(mockPutRecords.args[1][0]).to.deep.equals(SENSOR_INSERT);
+                    expect(mockPutRecords.args[0][0]).to.deep.equals(EVENT_READING_INSERTED);
+                    expect(mockPutRecords.args[1][0]).to.deep.equals(EVENT_READING_INSERTED);
                     expect(mockPutRecords.args[0][1]).to.deep.equals(expectedBody1);
                     expect(mockPutRecords.args[1][1]).to.deep.equals(expectedBody2);
                 });
@@ -310,6 +316,10 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                                 type: "activeEnergy",
                                 value: 3.603,
                                 unitOfMeasurement: "kWh"
+                            }, {
+                                type: "maxPower",
+                                unitOfMeasurement: "VAr",
+                                value: 0
                             }]
                         }
                     };
@@ -404,13 +414,13 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                             date: "2016-01-28T00:15:00.000Z",
                             source,
                             measurements: [{
-                                type: "reactiveEnergy",
-                                value: 7.315,
-                                unitOfMeasurement: "kVArh"
-                            }, {
                                 type: "maxPower",
                                 value: 3.9,
                                 unitOfMeasurement: "VAr"
+                            }, {
+                                type: "reactiveEnergy",
+                                value: 7.315,
+                                unitOfMeasurement: "kVArh"
                             }]
                         }
                     };
@@ -426,8 +436,8 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
 
                     await run(handler, event);
                     expect(mockPutRecords.callCount).to.equal(2);
-                    expect(mockPutRecords.args[0][0]).to.deep.equals(SENSOR_INSERT);
-                    expect(mockPutRecords.args[1][0]).to.deep.equals(SENSOR_INSERT);
+                    expect(mockPutRecords.args[0][0]).to.deep.equals(EVENT_READING_INSERTED);
+                    expect(mockPutRecords.args[1][0]).to.deep.equals(EVENT_READING_INSERTED);
                     expect(mockPutRecords.args[0][1]).to.deep.equals(expectedBody1);
                     expect(mockPutRecords.args[1][1]).to.deep.equals(expectedBody2);
                 });
@@ -443,13 +453,13 @@ describe("`iwwa-lambda-virtual-aggregator`", () => {
                                 value: 2.808,
                                 unitOfMeasurement: "kWh"
                             }, {
-                                type: "reactiveEnergy",
-                                value: 0.115,
-                                unitOfMeasurement: "kVArh"
-                            }, {
                                 type: "maxPower",
                                 value: 0.7,
                                 unitOfMeasurement: "VAr"
+                            }, {
+                                type: "reactiveEnergy",
+                                value: 0.115,
+                                unitOfMeasurement: "kVArh"
                             }]
                         }
                     };

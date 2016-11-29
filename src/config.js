@@ -12,4 +12,4 @@ export const ALLOWED_SOURCES = ["reading", "forecast"];
 export const DEFAULT_SAMPLE_DELTA_IN_MS = moment.duration(5, "minutes").asMilliseconds();
 export const FORMULAS_COLLECTION = "virtual-sensors-formulas";
 export const PRODUCER = "iwwa-lambda-virtual-aggregator";
-export const SENSOR_INSERT = "element inserted in collection readings";
+export const EVENT_READING_INSERTED = "element inserted in collection readings";

@@ -1,16 +1,9 @@
-import {
-    expect
-} from "chai";
+import {expect} from "chai";
 
-import {
-    ALLOWED_SOURCES
-} from "config";
+import {ALLOWED_SOURCES} from "config";
+import {skipProcessing} from "steps/skip-processing";
 
-import {
-    getReading
-} from "../utils";
-
-import skipProcessing from "steps/skip-processing";
+import {getReading} from "../utils";
 
 describe("skipProcessing", () => {
 

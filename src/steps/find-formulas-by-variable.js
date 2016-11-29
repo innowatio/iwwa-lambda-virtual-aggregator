@@ -1,7 +1,7 @@
 import {FORMULAS_COLLECTION} from "../config";
 import {getMongoClient} from "../services/mongodb";
 
-export default async function findAllFormulaByVariable (variable) {
+export async function findFormulasByVariable (variable) {
     const db = await getMongoClient();
     const query = {
         variables: {

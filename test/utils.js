@@ -50,11 +50,11 @@ export function getReading ({source="forecast", type="temperature"}) {
     };
 }
 
-export function getReadingWithMultipleMeasurements () {
+export function getReadingWithMultipleMeasurements (source = "reading") {
     return {
         "sensorId": "sensor1",
         "date": "2016-01-28T00:16:36.389Z",
-        "source": "reading",
+        source,
         "measurements": [
             {
                 "type": "activeEnergy",

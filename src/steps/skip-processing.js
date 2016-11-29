@@ -9,7 +9,7 @@ function checkSource (reading) {
     );
 }
 
-export default function skipProcessing (reading) {
+export function skipProcessing (reading) {
     // Ignore if not a reading
     return !checkSource(reading);
 }

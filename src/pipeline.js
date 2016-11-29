@@ -1,60 +1,77 @@
 import {isEmpty} from "ramda";
+import {map} from "bluebird";
+import get from "lodash.get";
+import moment from "moment";
+
+import {evaluateFormula} from "iwwa-formula-resolver";
 
 import log from "./services/logger";
-import skipProcessing from "./steps/skip-processing";
-import findAllFormulaByVariable from "./steps/find-all-formulas-by-variable";
-import spreadReadingByMeasurementType from "./steps/spread-reading-by-measurement-type";
-import createVirtualAggregate from "./steps/create-virtual-aggregate/";
-import resolveFormulas from "./steps/resolve-formulas";
-import {putRecords} from "./steps/put-in-kinesis";
+import {addSensorsDataToFormulas} from "./steps/add-sensors-data-to-formulas";
+import {dispatchReadingEvent} from "./steps/dispatch-reading-event";
+import {findFormulasByVariable} from "./steps/find-formulas-by-variable";
+import {skipProcessing} from "./steps/skip-processing";
 
 export default async function pipeline (event) {
-    log.info({event});
-    const rawReading = event.data.element;
 
-    /*
-    *   Workaround: some events have been incorrectly generated and thus don't
-    *   have an `element` property. When processing said events, just return and
-    *   move on without failing, as failures can block the kinesis stream.
-    */
-    if (!rawReading) {
-        return null;
+    try {
+        const rawReading = event.data.element;
+
+        /*
+        *   Workaround: some events have been incorrectly generated and thus don't
+        *   have an `element` property. When processing said events, just return and
+        *   move on without failing, as failures can block the kinesis stream.
+        */
+        if (!rawReading) {
+            return null;
+        }
+
+        // Check if use it or not
+        if (skipProcessing(rawReading)) {
+            return null;
+        }
+
+        log.info({event});
+
+        // Find related virtual sensor with interested formulas
+        const virtualSensors = await findFormulasByVariable(rawReading.sensorId);
+        log.debug({virtualSensors});
+        if (isEmpty(virtualSensors)) {
+            log.debug("LAMBDA SKIPPED EMPTY FORMULAS");
+            return null;
+        }
+
+        const source = get(rawReading, "measurements.0.source", rawReading.source);
+
+        await map(virtualSensors, async (virtualSensor) => {
+
+            const decoratedFormulas = await addSensorsDataToFormulas(virtualSensor.formulas, rawReading);
+
+            const filteredFormulas = decoratedFormulas.filter(x => {
+                return x.variables.length === x.sensorsData.length;
+            });
+
+            let date = "";
+
+            const measurements = filteredFormulas.map(decoratedFormula => {
+
+                const result = evaluateFormula({
+                    formula: decoratedFormula.formula
+                }, decoratedFormula.sensorsData, decoratedFormula.sampleDeltaInMS);
+
+                date = moment.utc(parseInt(result.measurementTimes)).toISOString();
+
+                return {
+                    type: decoratedFormula.measurementType,
+                    value: Math.round(parseFloat(result.measurementValues) * 1000) / 1000,
+                    unitOfMeasurement: rawReading.measurements.find(x => x.type == decoratedFormula.measurementType).unitOfMeasurement
+                };
+            });
+
+            await dispatchReadingEvent(virtualSensor._id, date, source, measurements);
+        });
+
+    } catch (error) {
+        log.error(error);
+        throw error;
     }
-
-    // Check if use it or not
-    if (skipProcessing(rawReading)) {
-        return null;
-    }
-
-    // Filter and spread reading
-    const readings = spreadReadingByMeasurementType(rawReading);
-    log.debug({readings});
-
-    // Find related formulas
-    const formulas = await findAllFormulaByVariable(rawReading.sensorId);
-    log.debug({formulas});
-    if (isEmpty(formulas)) {
-        log.info("LAMBDA SKIPPED EMPTY FORMULAS");
-        return null;
-    }
-
-    // Find related sensors readings value
-    const virtualAggregatesToCalculate = await createVirtualAggregate(readings, formulas);
-    log.debug({virtualAggregatesToCalculate});
-    if (isEmpty(virtualAggregatesToCalculate)) {
-        log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATE");
-        return null;
-    }
-
-    // Calculate all
-    const virtualAggregatesToSubmit = resolveFormulas(virtualAggregatesToCalculate);
-    log.debug({virtualAggregatesToSubmit});
-    if (isEmpty(virtualAggregatesToSubmit)) {
-        log.info("LAMBDA SKIPPED EMPTY VIRTUAL AGGREGATES TO SUBMIT");
-        return null;
-    }
-
-    await putRecords(virtualAggregatesToSubmit);
-
-    return null;
 }
