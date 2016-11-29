@@ -58,6 +58,11 @@ export default async function pipeline (event) {
                     formula: decoratedFormula.formula
                 }, decoratedFormula.sensorsData, decoratedFormula.sampleDeltaInMS);
 
+                log.debug({
+                    decoratedFormula,
+                    result
+                });
+
                 date = moment.utc(parseInt(result.measurementTimes)).toISOString();
 
                 return {
