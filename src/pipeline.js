@@ -1,4 +1,4 @@
-import {isEmpty} from "ramda";
+import {isEmpty, uniq} from "ramda";
 import {map} from "bluebird";
 import get from "lodash.get";
 import moment from "moment";
@@ -50,9 +50,7 @@ export default async function pipeline (event) {
                 return x.variables.length === x.sensorsData.length;
             });
 
-            let date = "";
-
-            const measurements = filteredFormulas.map(decoratedFormula => {
+            const formulaWithResult = filteredFormulas.map(decoratedFormula => {
 
                 const result = evaluateFormula({
                     formula: decoratedFormula.formula
@@ -63,16 +61,33 @@ export default async function pipeline (event) {
                     result
                 });
 
-                date = moment.utc(parseInt(result.measurementTimes)).toISOString();
-
                 return {
-                    type: decoratedFormula.measurementType,
-                    value: Math.round(parseFloat(result.measurementValues) * 1000) / 1000,
-                    unitOfMeasurement: rawReading.measurements.find(x => x.type == decoratedFormula.measurementType).unitOfMeasurement
+                    ...decoratedFormula,
+                    result
+                    // type: decoratedFormula.measurementType,
+                    // value: Math.round(parseFloat(result.measurementValues) * 1000) / 1000,
+                    // unitOfMeasurement: rawReading.measurements.find(x => x.type == decoratedFormula.measurementType).unitOfMeasurement
                 };
             });
 
-            await dispatchReadingEvent(virtualSensor._id, date, source, measurements);
+            const samples = uniq(formulaWithResult.map(x => x.sampleDeltaInMS));
+
+            await samples.map(async (sample) => {
+                const formulasBySample = formulaWithResult.filter(x => x.sampleDeltaInMS === sample);
+
+                const date = moment.utc(moment.utc(rawReading.date).valueOf() - moment.utc(rawReading.date).valueOf() % sample).toISOString();
+
+                const measurements = formulasBySample.map(formula => {
+                    return {
+                        type: formula.measurementType,
+                        value: Math.round(parseFloat(formula.result.measurementValues) * 1000) / 1000,
+                        unitOfMeasurement: rawReading.measurements.find(x => x.type === formula.measurementType).unitOfMeasurement
+                    };
+                });
+
+                await dispatchReadingEvent(virtualSensor._id, date, source, measurements);
+            });
+
         });
 
     } catch (error) {
