@@ -19,7 +19,7 @@ function parseMeasurement(measurement, parseFunc) {
     ) : [];
 }
 
-export function parseFilterAggregates(aggregates, readingDate, sampleDelta, aggregationType) {
+export function parseFilterAggregates(aggregates, readingDate, sampleDelta = 300000, aggregationType) {
 
     return aggregates.map(aggregate => {
 

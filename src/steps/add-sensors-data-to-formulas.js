@@ -15,6 +15,7 @@ export function decoupleFormulas(formulas) {
         return formula.measurementType.map(measurementType => {
             return {
                 ...formula,
+                sampleDeltaInMS: formula.sampleDeltaInMS || 300000,
                 measurementType
             };
         });
