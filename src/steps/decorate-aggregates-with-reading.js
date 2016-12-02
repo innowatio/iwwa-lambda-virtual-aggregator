@@ -37,7 +37,7 @@ export function decorateAggregatesWithReading(aggregates, reading, day, source, 
                     source: source,
                     measurementType: measurement.type,
                     unitOfMeasurement: measurement.unitOfMeasurement,
-                    measurementValues: measurement.value,
+                    measurementValues: measurement.value.toString(),
                     measurementTimes: moment.utc(reading.date).valueOf().toString()
                 }
             ];
