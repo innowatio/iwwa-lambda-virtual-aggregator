@@ -74,7 +74,7 @@ export default async function pipeline (event) {
                     ...decoratedFormula,
                     result
                 };
-            });
+            }).filter(x => !isNaN(x.result.measurementValues) || !isNaN(x.result.measurementTimes));
 
             const samples = uniq(formulaWithResult.map(x => x.sampleDeltaInMS || 300000));
 
