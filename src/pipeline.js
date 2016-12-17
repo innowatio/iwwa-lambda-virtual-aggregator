@@ -16,6 +16,7 @@ import {skipProcessing} from "./steps/skip-processing";
 export default async function pipeline (event) {
 
     try {
+        log.info({event});
         const rawReading = event.data.element;
 
         /*
@@ -31,8 +32,6 @@ export default async function pipeline (event) {
         if (skipProcessing(rawReading)) {
             return null;
         }
-
-        log.info({event});
 
         // Find related virtual sensor with interested formulas
         const virtualSensors = await findFormulasByVariable(rawReading.sensorId);
