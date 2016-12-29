@@ -8,7 +8,7 @@ export const KINESIS_STREAM_NAME = process.env.KINESIS_STREAM_NAME || "test";
 export const AGGREGATES_COLLECTION_NAME = process.env.AGGREGATES_COLLECTION_NAME || "readings-daily-aggregates";
 export const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 
-export const ALLOWED_SOURCES = ["reading", "forecast"];
+export const ALLOWED_SOURCES = ["reading", "forecast", "reference"];
 export const DEFAULT_SAMPLE_DELTA_IN_MS = moment.duration(5, "minutes").asMilliseconds();
 export const FORMULAS_COLLECTION = "virtual-sensors-formulas";
 export const PRODUCER = "iwwa-lambda-virtual-aggregator";
