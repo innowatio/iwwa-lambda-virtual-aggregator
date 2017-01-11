@@ -1,5 +1,3 @@
-import BPromise from "bluebird";
-
 function objectToBase64 (object) {
     return new Buffer(
         JSON.stringify(object)
@@ -32,13 +30,4 @@ export function getEventFromArray (array) {
 
 export function getEventFromObject (object) {
     return getEventFromArray([object]);
-}
-
-export function run (handler, event) {
-    return new BPromise((resolve, reject) => {
-        handler(event, {
-            succeed: resolve,
-            fail: reject
-        });
-    });
 }

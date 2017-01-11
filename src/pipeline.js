@@ -1,99 +1,79 @@
-import {isEmpty, uniq} from "ramda";
-import {map} from "bluebird";
-import get from "lodash.get";
-import inRange from "lodash.inrange";
-import moment from "moment";
+import {log} from "./services/logger";
 
-import {evaluateFormula} from "iwwa-formula-resolver";
-
-import log from "./services/logger";
-import {addSensorsDataToFormulas} from "./steps/add-sensors-data-to-formulas";
-import {dispatchReadingEvent} from "./steps/dispatch-reading-event";
-import {findFormulasByVariable} from "./steps/find-formulas-by-variable";
-import {removeOldVirtualReadings} from "./steps/remove-old-virtual-readings";
-import {skipProcessing} from "./steps/skip-processing";
+import {skipReading} from "./steps/skip-reading";
+import {findVirtualSensors} from "./steps/find-virtual-sensors";
+import {decoupleReading} from "./steps/decouple-reading";
+import {getAggregatesWithReading} from "./steps/get-aggregates-with-reading";
+import {getDecoratedFormulas} from "./steps/get-decorated-formulas";
+import {findSensorsAggregates} from "./steps/find-sensors-aggregates";
+import {filterSensorsAggregates} from "./steps/filter-sensors-aggregates";
+import {aggregateSensorsAggregates} from "./steps/aggregate-aggregates";
+import {applyFormula} from "./steps/apply-formula";
+import {dispatchReading} from "./steps/dispatch-reading";
 
 export default async function pipeline (event) {
 
     try {
-        log.info({event});
-        const rawReading = event.data.element;
-
+        const reading = event.data.element;
         /*
         *   Workaround: some events have been incorrectly generated and thus don't
         *   have an `element` property. When processing said events, just return and
         *   move on without failing, as failures can block the kinesis stream.
         */
-        if (!rawReading) {
-            return null;
+        if (!reading) {
+            return;
+        }
+        log.info({event});
+
+        const skip = skipReading(reading);
+        log.debug({skip});
+        if (skip) {
+            return;
         }
 
-        // Check if use it or not
-        if (skipProcessing(rawReading)) {
-            return null;
-        }
-
-        // Find related virtual sensor with interested formulas
-        const virtualSensors = await findFormulasByVariable(rawReading.sensorId);
+        const virtualSensors = await findVirtualSensors(reading.sensorId);
         log.debug({virtualSensors});
-        if (isEmpty(virtualSensors)) {
-            log.debug("LAMBDA SKIPPED EMPTY FORMULAS");
-            return null;
+        if (virtualSensors.length === 0) {
+            return;
         }
 
-        const source = get(rawReading, "measurements.0.source", rawReading.source);
-        const readingTime = moment.utc(rawReading.date);
+        const decoupledReadings = decoupleReading(reading);
+        log.debug({decoupledReadings});
 
-        await map(virtualSensors, async (virtualSensor) => {
+        const readingAggregates = await getAggregatesWithReading(reading.date, decoupledReadings);
+        log.debug({readingAggregates});
 
-            const decoratedFormulas = await addSensorsDataToFormulas(virtualSensor.formulas, rawReading);
+        const formulas = getDecoratedFormulas(virtualSensors);
+        log.debug({formulas});
+        
 
-            const filteredFormulas = decoratedFormulas.filter(x => {
-                return x.variables.length === x.sensorsData.length;
-            }).filter(x => {
-                const formulaStart = moment.utc(x.start).valueOf();
-                const formulaEnd = moment.utc(x.end).valueOf();
-                return inRange(readingTime.valueOf(), formulaStart, formulaEnd);
+        for (var index = 0; index < formulas.length; index++) {
+            const formula = formulas[index];
+
+            const sensorsAggregates = await findSensorsAggregates(reading, formula);
+            log.debug({sensorsAggregates});
+
+            const aggregates = [
+                ...sensorsAggregates,
+                ...readingAggregates
+            ];
+            log.debug({aggregates});
+
+            const filteredAggregates = filterSensorsAggregates(reading, formula, aggregates);
+            log.debug({filteredAggregates});
+
+            const aggregatedAggregates = aggregateSensorsAggregates(formula, filteredAggregates);
+            log.debug({aggregatedAggregates});
+
+            const result = applyFormula(formula, aggregatedAggregates);
+            log.debug({
+                result
             });
 
-            const formulaWithResult = await map(filteredFormulas, async (decoratedFormula) => {
-
-                const result = evaluateFormula({
-                    formula: decoratedFormula.formula
-                }, decoratedFormula.sensorsData, decoratedFormula.sampleDeltaInMS);
-
-                log.debug({
-                    decoratedFormula,
-                    result
-                });
-
-                await removeOldVirtualReadings(virtualSensor._id, source, decoratedFormula.measurementType, rawReading.date, decoratedFormula.sampleDeltaInMS);
-
-                return {
-                    ...decoratedFormula,
-                    result
-                };
-            }).filter(x => !isNaN(x.result.measurementValues) || !isNaN(x.result.measurementTimes));
-
-            const samples = uniq(formulaWithResult.map(x => x.sampleDeltaInMS || 300000));
-
-            await samples.map(async (sample) => {
-                const formulasBySample = formulaWithResult.filter(x => x.sampleDeltaInMS === sample);
-
-                const date = moment.utc(readingTime.valueOf() - readingTime.valueOf() % sample).toISOString();
-
-                const measurements = formulasBySample.map(formula => {
-                    return {
-                        type: formula.measurementType,
-                        value: Math.round(parseFloat(formula.result.measurementValues) * 1000) / 1000,
-                        unitOfMeasurement: rawReading.measurements.find(x => x.type === formula.measurementType).unitOfMeasurement
-                    };
-                });
-
-                await dispatchReadingEvent(virtualSensor._id, date, source, measurements);
-            });
-
-        });
+            if (result) {
+                await dispatchReading(reading, formula, result);
+            }
+        }
 
     } catch (error) {
         log.error(error);
