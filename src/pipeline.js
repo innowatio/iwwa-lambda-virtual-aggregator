@@ -31,7 +31,7 @@ export default async function pipeline (event) {
             return;
         }
 
-        const virtualSensors = await findVirtualSensors(reading.sensorId);
+        const virtualSensors = await findVirtualSensors(reading.sensorId, reading.date);
         log.debug({virtualSensors});
         if (virtualSensors.length === 0) {
             return;
@@ -45,7 +45,6 @@ export default async function pipeline (event) {
 
         const formulas = getDecoratedFormulas(virtualSensors);
         log.debug({formulas});
-        
 
         for (var index = 0; index < formulas.length; index++) {
             const formula = formulas[index];

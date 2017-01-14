@@ -135,7 +135,8 @@ describe("On reading event", () => {
             const event = getEventFromObject({
                 data: {
                     element: {
-                        reading
+                        ...reading,
+                        sensorId: "sensorId-5"
                     }
                 },
                 type: "element inserted in collection readings"
@@ -156,6 +157,54 @@ describe("On reading event", () => {
             });
 
             await db.collection(FORMULAS_COLLECTION).insert(virtualSensor);
+
+            await handler(event, context);
+
+            expect(context.succeed).to.have.callCount(1);
+            expect(dispatcher).to.have.callCount(0);
+        });
+
+        it("Formula no longer active", async () => {
+
+            const event = getEventFromObject({
+                data: {
+                    element: {
+                        sensorId: "sensorId-0",
+                        date: "1970-01-05T00:00:00.000Z",
+                        source: "reading",
+                        measurements: [{
+                            type: "temperature",
+                            value: 22,
+                            unitOfMeasurement: "°C"
+                        }]
+                    }
+                },
+                type: "element inserted in collection readings"
+            });
+
+            await db.collection(FORMULAS_COLLECTION).insert(virtualSensor);
+
+            await db.collection(AGGREGATES_COLLECTION_NAME).insert({
+                _id: "sensorId-0-1970-01-05-reading-temperature",
+                day: "1970-01-05",
+                sensorId: "sensorId-0",
+                source: "reading",
+                measurementType: "temperature",
+                unitOfMeasurement: "°C",
+                measurementValues: "21,22,22",
+                measurementTimes: "345600000,345601000,345602000"
+            });
+
+            await db.collection(AGGREGATES_COLLECTION_NAME).insert({
+                _id: "sensorId-1-1970-01-05-reading-co2",
+                day: "1970-01-05",
+                sensorId: "sensorId-1",
+                source: "reading",
+                measurementType: "co2",
+                unitOfMeasurement: "°C",
+                measurementValues: "80,100,120",
+                measurementTimes: "345600000,345601000,345602000"
+            });
 
             await handler(event, context);
 
