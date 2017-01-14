@@ -70,7 +70,7 @@ export default async function pipeline (event) {
                 result
             });
 
-            if (result) {
+            if (!isNaN(parseFloat(result))) {
                 await dispatchReading(reading, formula, result);
             }
         }
