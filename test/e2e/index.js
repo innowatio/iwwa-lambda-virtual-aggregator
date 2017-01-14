@@ -364,6 +364,98 @@ describe("On reading event", () => {
             expect(dispatcher).to.have.calledWith("element inserted in collection readings", expected, {});
         });
 
-    });
+        it("With aggregates and partial reading, ternary expressions", async () => {
 
+            const event = getEventFromObject({
+                data: {
+                    element: {
+                        sensorId: "sensorId-0",
+                        date: "1970-01-01T00:00:00.500Z",
+                        source: "reading",
+                        measurements: [{
+                            type: "temperature",
+                            value: 22,
+                            unitOfMeasurement: "°C"
+                        }]
+                    }
+                },
+                type: "element inserted in collection readings"
+            });
+
+            await db.collection(FORMULAS_COLLECTION).insert({
+                ...virtualSensor,
+                formulas: [{
+                    ...formula,
+                    measurementUnit: "status",
+                    measurementType: "comfort",
+                    formula: "(18 <= x and x <= 22) and (y <= 800) and (30 <= z and z <= 50) ? 2 : ((y >= 1000 or x < 16 or x >= 25 or z < 30 or z > 50) ? 0 : 1)",
+                    variables: [{
+                        symbol: "x",
+                        sensorId: reading.sensorId,
+                        measurementType: "temperature"
+                    }, {
+                        symbol: "y",
+                        sensorId: reading.sensorId,
+                        measurementType: "co2"
+                    }, {
+                        symbol: "z",
+                        sensorId: reading.sensorId,
+                        measurementType: "humidity"
+                    }]
+                }]
+            });
+
+            await db.collection(AGGREGATES_COLLECTION_NAME).insert({
+                _id: "sensorId-0-1970-01-01-reading-temperature",
+                day: "1970-01-01",
+                sensorId: "sensorId-0",
+                source: "reading",
+                measurementType: "temperature",
+                unitOfMeasurement: "°C",
+                measurementValues: "21,21,23,22,22,22,22,22,22,22",
+                measurementTimes: "0,500,1000,1500,2000,2500,3000,3500,4000,4500"
+            });
+
+            await db.collection(AGGREGATES_COLLECTION_NAME).insert({
+                _id: "sensorId-0-1970-01-01-reading-co2",
+                day: "1970-01-01",
+                sensorId: "sensorId-0",
+                source: "reading",
+                measurementType: "co2",
+                unitOfMeasurement: "ppm",
+                measurementValues: "400,450,550,800,900,100000,800,900,550,500",
+                measurementTimes: "0,500,1000,1500,2000,2500,3000,3500,4000,4500"
+            });
+
+            await db.collection(AGGREGATES_COLLECTION_NAME).insert({
+                _id: "sensorId-0-1970-01-01-reading-humidity",
+                day: "1970-01-01",
+                sensorId: "sensorId-0",
+                source: "reading",
+                measurementType: "humidity",
+                unitOfMeasurement: "%",
+                measurementValues: "30,60,50,45,25,55,35,45,40,35",
+                measurementTimes: "0,500,1000,1500,2000,2500,3000,3500,4000,4500"
+            });
+
+            await handler(event, context);
+
+            expect(context.succeed).to.have.callCount(1);
+
+            const expected = {
+                sensorId: "virtual-sensorId-0",
+                source: reading.source,
+                date: "1970-01-01T00:00:00Z",
+                measurements: [{
+                    type: "comfort",
+                    unitOfMeasurement: "status",
+                    value: 0
+                }]
+            };
+
+            expect(dispatcher).to.have.callCount(1);
+            expect(dispatcher).to.have.calledWith("element inserted in collection readings", expected, {});
+        });
+
+    });
 });
