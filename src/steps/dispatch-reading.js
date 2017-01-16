@@ -22,14 +22,16 @@ export async function dispatchReading(reading, formula, result) {
     const eventType = "element inserted in collection readings";
 
     const event = {
-        sensorId,
-        date: moment.utc(millis).format(),
-        source,
-        measurements: [{
-            type: measurementType,
-            value: parseFloat(result),
-            unitOfMeasurement: measurementUnit
-        }]
+        element: {
+            sensorId,
+            date: moment.utc(millis).format(),
+            source,
+            measurements: [{
+                type: measurementType,
+                value: parseFloat(result),
+                unitOfMeasurement: measurementUnit
+            }]
+        }
     };
 
     log.debug({event});

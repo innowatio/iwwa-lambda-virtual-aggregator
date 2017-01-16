@@ -338,14 +338,16 @@ describe("On reading event", () => {
             expect(context.succeed).to.have.callCount(1);
 
             const expected = {
-                sensorId: "virtual-sensorId-0",
-                source: reading.source,
-                date: "1970-01-01T00:00:00Z",
-                measurements: [{
-                    type: "customType",
-                    unitOfMeasurement: "°C/ppm",
-                    value: 250
-                }]
+                element: {
+                    sensorId: "virtual-sensorId-0",
+                    source: reading.source,
+                    date: "1970-01-01T00:00:00Z",
+                    measurements: [{
+                        type: "customType",
+                        unitOfMeasurement: "°C/ppm",
+                        value: 250
+                    }]
+                }
             };
 
             expect(dispatcher).to.have.callCount(1);
@@ -399,14 +401,16 @@ describe("On reading event", () => {
             expect(context.succeed).to.have.callCount(1);
 
             const expected = {
-                sensorId: "virtual-sensorId-0",
-                source: reading.source,
-                date: "1970-01-01T00:00:00Z",
-                measurements: [{
-                    type: "customType",
-                    unitOfMeasurement: "°C/ppm",
-                    value: 2
-                }]
+                element: {
+                    sensorId: "virtual-sensorId-0",
+                    source: reading.source,
+                    date: "1970-01-01T00:00:00Z",
+                    measurements: [{
+                        type: "customType",
+                        unitOfMeasurement: "°C/ppm",
+                        value: 2
+                    }]
+                }
             };
 
             expect(dispatcher).to.have.callCount(1);
@@ -492,14 +496,16 @@ describe("On reading event", () => {
             expect(context.succeed).to.have.callCount(1);
 
             const expected = {
-                sensorId: "virtual-sensorId-0",
-                source: reading.source,
-                date: "1970-01-01T00:00:00Z",
-                measurements: [{
-                    type: "comfort",
-                    unitOfMeasurement: "status",
-                    value: 0
-                }]
+                element: {
+                    sensorId: "virtual-sensorId-0",
+                    source: reading.source,
+                    date: "1970-01-01T00:00:00Z",
+                    measurements: [{
+                        type: "comfort",
+                        unitOfMeasurement: "status",
+                        value: 0
+                    }]
+                }
             };
 
             expect(dispatcher).to.have.callCount(1);
