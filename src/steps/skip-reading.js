@@ -3,6 +3,5 @@ import {contains} from "ramda";
 import {ALLOWED_SOURCES} from "../config";
 
 export function skipReading (reading) {
-    const {source} = reading;
-    return !contains(source, ALLOWED_SOURCES);
+    return !contains(reading.source || reading.measurements[0].source, ALLOWED_SOURCES);
 }
