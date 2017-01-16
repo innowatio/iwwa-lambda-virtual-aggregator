@@ -66,7 +66,8 @@ export default async function pipeline (event) {
 
             const result = applyFormula(formula, aggregatedAggregates);
             log.debug({
-                result
+                result,
+                formula
             });
 
             if (!isNaN(parseFloat(result))) {
