@@ -7,7 +7,8 @@ export async function dispatchReading(reading, formula, result) {
 
     const {
         date,
-        source
+        source,
+        measurements
     } = reading;
     
     const {
@@ -25,7 +26,7 @@ export async function dispatchReading(reading, formula, result) {
         element: {
             sensorId,
             date: moment.utc(millis).format(),
-            source,
+            source: source || measurements[0].source,
             measurements: [{
                 type: measurementType,
                 value: parseFloat(result),
