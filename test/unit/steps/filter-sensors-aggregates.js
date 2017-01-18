@@ -70,8 +70,8 @@ describe("Filter aggregates", () => {
             source: "reading",
             measurementType: "temperature",
             unitOfMeasurement: "°C",
-            measurementValues: "0,1,2,3,4,5,6,7,8,9,10,11,12",
-            measurementTimes: "0,5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000"
+            measurementValues: "0,1,2,3,4,5,6,7,8,9,10,11",
+            measurementTimes: "0,5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000"
         }]);
 
     });

@@ -31,7 +31,7 @@ export function filterSensorsAggregates(reading, formula, aggregates) {
                 time: parseInt(time),
                 value: measurementValues[index]
             };
-        }).filter(x => startMillis <= x.time && x.time <= endMillis);
+        }).filter(x => startMillis <= x.time && x.time < endMillis);
 
         if (measurements.length != 0) {
             return {
