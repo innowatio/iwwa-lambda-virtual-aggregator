@@ -1,6 +1,6 @@
 {
   "name": "iwwa-lambda-virtual-aggregator",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "description": "Lambda virtual aggregator",
   "main": "src/index.js",
   "repository": {

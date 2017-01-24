@@ -10,7 +10,7 @@ export async function dispatchReading(reading, formula, result) {
         source,
         measurements
     } = reading;
-    
+
     const {
         sensorId,
         measurementType,
@@ -29,7 +29,7 @@ export async function dispatchReading(reading, formula, result) {
             source: source || measurements[0].source,
             measurements: [{
                 type: measurementType,
-                value: Math.round(parseFloat(result) * 100) / 100,
+                value: parseFloat(result),
                 unitOfMeasurement: measurementUnit
             }]
         }
