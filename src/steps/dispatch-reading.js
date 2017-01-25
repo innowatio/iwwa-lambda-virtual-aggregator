@@ -29,7 +29,7 @@ export async function dispatchReading(reading, formula, result) {
             source: source || measurements[0].source,
             measurements: [{
                 type: measurementType,
-                value: parseFloat(result),
+                value: Math.round(parseFloat(result) * 100000) / 100000,
                 unitOfMeasurement: measurementUnit
             }]
         }

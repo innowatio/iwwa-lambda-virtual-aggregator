@@ -492,7 +492,7 @@ describe("On reading event", () => {
                     measurements: [{
                         type: "activeEnergy",
                         unitOfMeasurement: "kWh",
-                        value: 77.10000000000001
+                        value: 77.1
                     }]
                 }
             };
