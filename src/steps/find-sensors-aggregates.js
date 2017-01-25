@@ -17,9 +17,10 @@ export function getIds(formula, reading) {
 
     const {
         date,
-        source,
         sensorId
     } = reading;
+
+    const source = reading.source || reading.measurements[0].source;
 
     const day = moment.utc(date).format("YYYY-MM-DD");
     const measurementTypes = reading.measurements.map(x => x.type);
